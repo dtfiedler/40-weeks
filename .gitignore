@@ -27,3 +27,9 @@ go.work
 
 # Environment variables
 .env
+
+# Docker
+.dockerignore
+
+# Data directory (for persistent storage)
+data/
