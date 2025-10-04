@@ -1,4 +1,12 @@
-# Binaries for programs and plugins
+# Database files
+*.db
+*.db-journal
+
+# Binary
+main
+simple-go
+
+# Go build cache
 *.exe
 *.exe~
 *.dll
@@ -11,8 +19,11 @@
 # Output of the go coverage tool
 *.out
 
+# Dependency directories
+vendor/
+
 # Go workspace file
 go.work
 
-# Binary
-simple-go
+# Environment variables
+.env
