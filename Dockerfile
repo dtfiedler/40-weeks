@@ -40,13 +40,13 @@ COPY --from=builder /app/migrate.sh .
 RUN chmod +x migrate.sh
 
 # Create directory for database
-RUN mkdir -p /data
+RUN mkdir -p /data/sqlite
 
 # Expose port
 EXPOSE 8080
 
 # Set environment variables
-ENV DATABASE_URL=/data/users.db
+ENV DATABASE_URL=/data/sqlite/core.db
 ENV PORT=8080
 
 # Run migrations and start the application

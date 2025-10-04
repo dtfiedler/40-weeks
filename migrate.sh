@@ -4,7 +4,7 @@
 # Usage: ./migrate.sh [up|down|status|create]
 
 MIGRATE_CMD=~/go/bin/migrate
-DATABASE_URL="sqlite3://./users.db"
+DATABASE_URL="sqlite3://./data/sqlite/core.db"
 MIGRATIONS_PATH="db/migrations"
 
 case "$1" in

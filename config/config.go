@@ -17,7 +17,7 @@ func init() {
 	AppConfig = &Config{
 		JWTSecret:   getEnvWithDefault("JWT_SECRET", "your-secret-key-change-this"),
 		ServerPort:  getEnvWithDefault("PORT", "8080"),
-		DatabaseURL: getEnvWithDefault("DATABASE_URL", "./users.db"),
+		DatabaseURL: getEnvWithDefault("DATABASE_URL", "./data/sqlite/core.db"),
 	}
 }
 
