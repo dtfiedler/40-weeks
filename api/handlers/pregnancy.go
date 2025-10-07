@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -428,38 +427,54 @@ func intPtr(i int) *int {
 	return &i
 }
 
-// generatePregnancyHash creates a hash for a pregnancy ID
+// generatePregnancyHash creates a deterministic, reversible hash for a pregnancy ID
 func generatePregnancyHash(pregnancyID int) string {
-	// Use a simple hash of the pregnancy ID - in production you'd want a more secure method
-	hasher := sha256.New()
-	hasher.Write([]byte(fmt.Sprintf("pregnancy_%d_salt_2024", pregnancyID)))
-	hash := hex.EncodeToString(hasher.Sum(nil))
-	// Return first 16 characters for shorter URLs
-	return hash[:16]
+	// Simple XOR-based encoding that's reversible
+	const secret = 0x40202024 // System secret as hex constant (40 = @, 2024 = year)
+	
+	// XOR the pregnancy ID with the secret
+	encoded := pregnancyID ^ secret
+	
+	// Convert to hex string with zero padding
+	return fmt.Sprintf("%08x", encoded)
 }
 
 // validatePregnancyHash validates a hash and returns the pregnancy ID
 func validatePregnancyHash(hash string) (int, error) {
-	if len(hash) != 16 {
+	if len(hash) != 8 {
+		log.Printf("Invalid hash length: %d, expected 8", len(hash))
 		return 0, fmt.Errorf("invalid hash length")
 	}
 	
-	// Try to find a pregnancy ID that generates this hash
-	// In production, you'd store the hash in the database for efficiency
-	for pregnancyID := 1; pregnancyID <= 10000; pregnancyID++ {
-		if generatePregnancyHash(pregnancyID) == hash {
-			// Verify the pregnancy exists
-			pregnancy, err := GetPregnancyByID(pregnancyID)
-			if err != nil {
-				continue
-			}
-			if pregnancy != nil {
-				return pregnancyID, nil
-			}
-		}
+	log.Printf("Validating hash: %s", hash)
+	
+	// Decode the hex string
+	encoded, err := strconv.ParseInt(hash, 16, 64)
+	if err != nil {
+		log.Printf("Invalid hex hash: %s", hash)
+		return 0, fmt.Errorf("invalid hash format")
 	}
 	
-	return 0, fmt.Errorf("invalid hash")
+	// Reverse the XOR to get original pregnancy ID
+	const secret = 0x40202024
+	pregnancyID := int(encoded) ^ secret
+	
+	log.Printf("Decoded pregnancy ID: %d from hash: %s", pregnancyID, hash)
+	
+	// Verify the pregnancy exists and is active
+	pregnancy, err := GetPregnancyByID(pregnancyID)
+	if err != nil {
+		log.Printf("Pregnancy not found for ID: %d", pregnancyID)
+		return 0, fmt.Errorf("pregnancy not found")
+	}
+	
+	if !pregnancy.IsActive {
+		log.Printf("Pregnancy %d is not active", pregnancyID)
+		return 0, fmt.Errorf("pregnancy not active")
+	}
+	
+	log.Printf("Hash validated for pregnancy ID: %d", pregnancyID)
+	return pregnancyID, nil
 }
 
 func GetPregnancyByID(pregnancyID int) (*models.Pregnancy, error) {

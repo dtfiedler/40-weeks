@@ -309,14 +309,21 @@
 			document.getElementById('joinForm').classList.remove('hidden');
 			
 			// Update page content with pregnancy info
+			const dueDate = new Date(pregnancyInfo.due_date);
+			const formattedDueDate = dueDate.toLocaleDateString('en-US', { 
+				year: 'numeric', 
+				month: 'long', 
+				day: 'numeric' 
+			});
+			
+			document.getElementById('inviteTitle').textContent = `Join ${pregnancyInfo.parent_names}'s Village!`;
+			
 			if (pregnancyInfo.baby_name && pregnancyInfo.baby_name !== 'Baby') {
-				document.getElementById('inviteTitle').textContent = `Join ${pregnancyInfo.parent_names}'s Village!`;
-				document.getElementById('inviteDescription').textContent = 
-					`${pregnancyInfo.parent_names} want you to follow along with ${pregnancyInfo.baby_name}'s journey. Add yourself to get updates about their pregnancy!`;
+				document.getElementById('inviteDescription').innerHTML = 
+					`${pregnancyInfo.parent_names} are expecting <strong>${pregnancyInfo.baby_name}</strong> on <strong>${formattedDueDate}</strong>.<br>Provide your email to receive updates on their pregnancy, send love and support! 💕`;
 			} else {
-				document.getElementById('inviteTitle').textContent = `Join ${pregnancyInfo.parent_names}'s Village!`;
-				document.getElementById('inviteDescription').textContent = 
-					`${pregnancyInfo.parent_names} want you to follow along with their pregnancy journey. Add yourself to get updates!`;
+				document.getElementById('inviteDescription').innerHTML = 
+					`${pregnancyInfo.parent_names} are expecting their baby on <strong>${formattedDueDate}</strong>.<br>Provide your email to receive updates on their pregnancy, send love and support! 💕`;
 			}
 		}
 
