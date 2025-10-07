@@ -96,6 +96,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Trim whitespace from input fields
+	req.Name = strings.TrimSpace(req.Name)
+	req.Email = strings.TrimSpace(req.Email)
+
 	// Validate input
 	if req.Name == "" || req.Email == "" || req.Password == "" {
 		http.Error(w, "Name, email, and password are required", http.StatusBadRequest)

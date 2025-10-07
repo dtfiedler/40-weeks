@@ -220,8 +220,8 @@
 		document.getElementById('registerForm').addEventListener('submit', async (e) => {
 			e.preventDefault();
 			
-			const name = document.getElementById('name').value;
-			const email = document.getElementById('email').value;
+			const name = document.getElementById('name').value.trim();
+			const email = document.getElementById('email').value.trim();
 			const password = document.getElementById('password').value;
 			const messageDiv = document.getElementById('message');
 			const messageText = document.getElementById('message-text');
