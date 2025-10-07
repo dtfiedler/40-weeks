@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>40Weeks - Share Your Pregnancy Journey with Your Village</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="40weeks helps expecting parents track their pregnancy journey and share updates with friends and family. Build your village and celebrate every milestone together.">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						'sans': ['Poppins', 'system-ui', 'sans-serif'],
+						'serif': ['DM Serif Display', 'serif'],
+					},
+					colors: {
+						primary: {
+							50: '#fffbeb',
+							100: '#fef3c7',
+							200: '#fde68a',
+							300: '#fcd34d',
+							400: '#fbbf24',
+							500: '#f59e0b',
+							600: '#d97706',
+							700: '#b45309',
+							800: '#92400e',
+							900: '#78350f'
+						}
+					}
+				}
+			}
+		}
+	</script>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+	<style>
+		/* Shadcn-inspired custom styles */
+		:root {
+			--background: 0 0% 100%;
+			--foreground: 240 10% 3.9%;
+			--card: 0 0% 100%;
+			--card-foreground: 240 10% 3.9%;
+			--primary: 240 5.9% 10%;
+			--primary-foreground: 0 0% 98%;
+			--secondary: 240 4.8% 95.9%;
+			--secondary-foreground: 240 5.9% 10%;
+			--muted: 240 4.8% 95.9%;
+			--muted-foreground: 240 3.8% 46.1%;
+			--accent: 217 91% 60%;
+			--accent-foreground: 0 0% 98%;
+			--destructive: 0 84.2% 60.2%;
+			--destructive-foreground: 0 0% 98%;
+			--border: 240 5.9% 90%;
+			--input: 240 5.9% 90%;
+			--ring: 240 10% 3.9%;
+			--radius: 0.5rem;
+		}
+		
+		/* Custom CSS variables for shadcn components */
+		
+		.card {
+			background-color: hsl(var(--card));
+			color: hsl(var(--card-foreground));
+			border-radius: var(--radius);
+			border: 1px solid hsl(var(--border));
+			box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+		}
+		
+		.btn-primary {
+			transition: all 0.2s ease;
+		}
+		
+		.btn-primary:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.15);
+		}
+		
+		.btn-secondary {
+			background-color: transparent;
+			color: hsl(var(--foreground));
+			border: 1px solid hsl(var(--border));
+			transition: all 0.2s ease;
+		}
+		
+		.btn-secondary:hover {
+			background-color: hsl(var(--muted));
+		}
+		
+		.gradient-bg {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		}
+		
+		.feature-card {
+			transition: all 0.3s ease;
+		}
+		
+		.feature-card:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 25px 0 rgb(0 0 0 / 0.1);
+		}
+
+		.hero-gradient {
+			background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+		}
+	</style>
+</head>
+<body class="bg-gray-50">
+	<!-- Navigation -->
+	<nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="flex justify-between items-center h-16">
+				<div class="flex items-center">
+					<h1 class="text-2xl font-bold text-gray-900 font-serif">40Weeks</h1>
+					<span class="ml-2 text-sm text-primary-500 font-medium">BETA</span>
+				</div>
+				<div class="flex items-center space-x-4">
+					<!-- Authentication links hidden for beta launch -->
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Hero Section -->
+	<section class="relative overflow-hidden">
+		<div class="hero-gradient py-16 sm:py-24 lg:py-32">
+			<div class="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
+				<div class="text-center">
+					<div class="relative">
+						<div class="absolute -top-10 -right-20 opacity-20">
+							<svg width="200" height="300" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<!-- Giraffe SVG -->
+								<g transform="translate(50, 50)">
+									<!-- Body -->
+									<ellipse cx="50" cy="120" rx="25" ry="40" fill="#d4af37"/>
+									<!-- Neck -->
+									<rect x="45" y="80" width="10" height="60" fill="#d4af37"/>
+									<!-- Head -->
+									<ellipse cx="50" cy="65" rx="12" ry="15" fill="#d4af37"/>
+									<!-- Spots -->
+									<circle cx="45" cy="110" r="3" fill="#b8860b"/>
+									<circle cx="55" cy="125" r="4" fill="#b8860b"/>
+									<circle cx="48" cy="60" r="2" fill="#b8860b"/>
+									<!-- Legs -->
+									<rect x="40" y="155" width="4" height="25" fill="#d4af37"/>
+									<rect x="46" y="155" width="4" height="25" fill="#d4af37"/>
+									<rect x="52" y="155" width="4" height="25" fill="#d4af37"/>
+									<rect x="58" y="155" width="4" height="25" fill="#d4af37"/>
+									<!-- Eyes -->
+									<circle cx="48" cy="62" r="1" fill="#000"/>
+									<circle cx="52" cy="62" r="1" fill="#000"/>
+									<!-- Horns -->
+									<rect x="47" y="52" width="1" height="5" fill="#d4af37"/>
+									<rect x="52" y="52" width="1" height="5" fill="#d4af37"/>
+								</g>
+							</svg>
+						</div>
+						<h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 relative z-10 font-serif">
+							Your Pregnancy Journey
+							<span class="block text-yellow-50">Starts Here</span>
+						</h1>
+					</div>
+					<p class="text-xl sm:text-2xl text-yellow-50 mb-10 max-w-3xl mx-auto leading-relaxed">
+						Track milestones, share updates, and celebrate every moment with the people who matter most during your 40-week journey.
+					</p>
+					<div class="max-w-md mx-auto mb-8">
+						<form id="betaSignupForm" class="flex flex-col sm:flex-row gap-3">
+							<input type="email" id="betaEmail" placeholder="Enter your email" required class="flex-1 px-4 py-3 rounded-lg text-gray-900 placeholder-gray-500 border-0 focus:ring-2 focus:ring-primary-300 focus:outline-none text-lg">
+							<button type="submit" id="betaSubmitBtn" class="bg-primary-400 hover:bg-primary-500 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-lg btn-primary whitespace-nowrap">
+								Get Started
+							</button>
+						</form>
+						<div id="betaMessage" class="text-sm mt-3 text-center hidden"></div>
+						<p id="betaSubtext" class="text-yellow-100 text-sm mt-3 text-center">Join expecting families sharing their journey with 40Weeks</p>
+					</div>
+					<div class="flex flex-col sm:flex-row gap-4 justify-center">
+						<a href="#features" class="bg-white/10 backdrop-blur-sm text-white border border-white/20 hover:bg-white/20 px-6 py-3 rounded-lg text-lg font-medium transition-colors">
+							Learn More
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- Floating Giraffe Elements -->
+		<div class="absolute top-20 left-10 opacity-30">
+			<svg width="60" height="80" viewBox="0 0 100 140" fill="none">
+				<g transform="translate(25, 25)">
+					<ellipse cx="25" cy="60" rx="12" ry="20" fill="#f59e0b"/>
+					<rect x="22" y="40" width="6" height="30" fill="#f59e0b"/>
+					<ellipse cx="25" cy="32" rx="6" ry="8" fill="#f59e0b"/>
+					<circle cx="22" cy="55" r="2" fill="#d97706"/>
+					<circle cx="28" cy="62" r="2" fill="#d97706"/>
+				</g>
+			</svg>
+		</div>
+		<div class="absolute bottom-20 right-20 opacity-20">
+			<svg width="80" height="100" viewBox="0 0 100 140" fill="none">
+				<g transform="translate(15, 15)">
+					<ellipse cx="35" cy="70" rx="15" ry="25" fill="#fbbf24"/>
+					<rect x="32" y="45" width="6" height="35" fill="#fbbf24"/>
+					<ellipse cx="35" cy="37" rx="8" ry="10" fill="#fbbf24"/>
+					<circle cx="32" cy="65" r="2" fill="#f59e0b"/>
+					<circle cx="38" cy="72" r="2" fill="#f59e0b"/>
+				</g>
+			</svg>
+		</div>
+	</section>
+
+	<!-- Problem Statement -->
+	<section class="py-12 sm:py-16 bg-white">
+		<div class="max-w-4xl mx-auto px-6 sm:px-6 lg:px-8 text-center">
+			<h2 class="text-3xl font-bold text-gray-900 mb-6 font-serif">
+				Everyone knows it takes a village to raise a child
+			</h2>
+			<p class="text-xl text-gray-600 leading-relaxed mb-8">
+				But keeping everyone in your circle updated during pregnancy can be overwhelming. Who knows about your pregnancy? 
+				Who should get the 20-week scan photos? How do you share the joy without the stress?
+			</p>
+			<p class="text-2xl font-medium text-primary-600 font-serif">
+				Get started building yours with 40Weeks!
+			</p>
+		</div>
+	</section>
+
+	<!-- Features Section -->
+	<section id="features" class="py-16 sm:py-20 bg-gray-50">
+		<div class="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
+			<div class="text-center mb-16">
+				<h2 class="text-4xl font-bold text-gray-900 mb-4 font-serif">Everything you need for your pregnancy journey</h2>
+				<p class="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+					40Weeks makes it simple to track your pregnancy and keep your loved ones connected to your journey.
+				</p>
+			</div>
+
+			<!-- Feature 1: Village Management -->
+			<div class="mb-20">
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+					<div class="lg:order-1">
+						<div class="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mb-6">
+							<svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+							</svg>
+						</div>
+						<h3 class="text-3xl font-bold text-gray-900 mb-4 font-serif">"Tell Your Village"</h3>
+						<p class="text-xl text-gray-600 leading-relaxed mb-6">
+							Keep track of who knows about your pregnancy and who doesn't. No more awkward conversations or forgotten announcements.
+						</p>
+						<ul class="space-y-3 text-gray-600">
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								Track "told" vs "not told" status for each person
+							</li>
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								Village members can see who else knows - no awkward conversations
+							</li>
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								Village members see who else knows, so they won't spill the beans!
+							</li>
+						</ul>
+					</div>
+					<div class="lg:order-2">
+						<div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+							<div class="flex items-center justify-between mb-4">
+								<h4 class="font-semibold text-gray-900">Our Village</h4>
+								<span class="text-sm bg-primary-100 text-primary-700 px-2 py-1 rounded">5 people</span>
+							</div>
+							<div class="space-y-3">
+								<div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded">
+									<div class="flex items-center">
+										<div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">M</div>
+										<span class="ml-3 text-gray-900">Mom & Dad</span>
+									</div>
+									<span class="text-green-600 text-sm font-medium">✓ Told</span>
+								</div>
+								<div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded">
+									<div class="flex items-center">
+										<div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">N</div>
+										<span class="ml-3 text-gray-900">Nick & Grace</span>
+									</div>
+									<span class="text-green-600 text-sm font-medium">✓ Told</span>
+								</div>
+								<div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded">
+									<div class="flex items-center">
+										<div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-medium">M</div>
+										<span class="ml-3 text-gray-900">Meg & Sam</span>
+									</div>
+									<span class="text-green-600 text-sm font-medium">✓ Told</span>
+								</div>
+								<div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded">
+									<div class="flex items-center">
+										<div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">Z</div>
+										<span class="ml-3 text-gray-900">Zach & Haley</span>
+									</div>
+									<span class="text-gray-500 text-sm">Not told yet</span>
+								</div>
+								<div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded">
+									<div class="flex items-center">
+										<div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm font-medium">G</div>
+										<span class="ml-3 text-gray-900">Grandma Sue</span>
+									</div>
+									<span class="text-gray-500 text-sm">Not told yet</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Feature 2: Weekly Updates -->
+			<div class="mb-20">
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+					<div class="lg:order-2">
+						<div class="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mb-6">
+							<svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+							</svg>
+						</div>
+						<h3 class="text-3xl font-bold text-gray-900 mb-4 font-serif">Track & Share Milestones</h3>
+						<p class="text-xl text-gray-600 leading-relaxed mb-6">
+							Capture every special moment - from first kicks to doctor visits. Share photos and milestone updates with your village automatically.
+						</p>
+						<ul class="space-y-3 text-gray-600">
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								Document special moments with photos and stories
+							</li>
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								Track appointments, scans, and big moments
+							</li>
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								Celebrate every milestone with your village
+							</li>
+						</ul>
+					</div>
+					<div class="lg:order-1">
+						<div class="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+							<div class="flex items-center justify-between mb-4">
+								<h4 class="font-semibold text-gray-900">20-Week Anatomy Scan</h4>
+								<span class="text-sm text-gray-500">2 days ago</span>
+							</div>
+							<div class="mb-4">
+								<div class="w-full p-3 bg-white rounded-lg shadow-sm border border-gray-200 mb-3" style="height: 325px;">
+									<div class="w-full h-full rounded-md overflow-hidden border-2 border-primary-200">
+										<img src="/static/20-weeks.jpg" alt="20-week ultrasound scan" class="w-full h-full object-cover">
+									</div>
+								</div>
+								<p class="text-gray-700 text-sm leading-relaxed">
+									"Amazing news! Everything looks perfect at our anatomy scan. Baby is healthy and growing well. We got some incredible ultrasound photos to share!"
+								</p>
+							</div>
+							<div class="flex items-center justify-between text-sm text-gray-500">
+								<span>📸 4 photos</span>
+								<span>✉️ Sent to 5 people</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Feature 3: Email Updates -->
+			<div class="mb-20">
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+					<div class="lg:order-1">
+						<div class="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center mb-6">
+							<svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+							</svg>
+						</div>
+						<h3 class="text-3xl font-bold text-gray-900 mb-4 font-serif">Keep Everyone in the Loop</h3>
+						<p class="text-xl text-gray-600 leading-relaxed mb-6">
+							Your village receives email updates with your latest news, photos, and milestones. Plus, keep them engaged with fun polls throughout your journey.
+						</p>
+						<ul class="space-y-3 text-gray-600">
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								Interactive polls for gender predictions, due dates, and decisions
+							</li>
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								No app required for your village - just email
+							</li>
+							<li class="flex items-start">
+								<svg class="w-5 h-5 text-primary-500 mt-1 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+								</svg>
+								Easy to share and manage with beautiful results
+							</li>
+						</ul>
+					</div>
+					<div class="lg:order-2">
+						<div class="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+							<div class="bg-primary-500 text-white p-4">
+								<h4 class="font-semibold">📧 Sarah & Mike's Baby Update</h4>
+								<p class="text-primary-100 text-sm">It's a Girl! 💕</p>
+							</div>
+							<div class="p-6">
+								<div class="w-full p-2 bg-gray-50 rounded-lg mb-4" style="height: 325px;">
+									<div class="w-full h-full rounded overflow-hidden border-2 border-primary-300">
+										<img src="/static/gender-reveal.jpg" alt="Gender reveal celebration" class="w-full h-full object-cover">
+									</div>
+								</div>
+								<p class="text-gray-700 text-sm leading-relaxed mb-4">
+									"The big reveal is here! We're so excited to share that we're having a girl! Thank you all for being part of our journey..."
+								</p>
+								<div class="text-center">
+									<button class="bg-primary-500 text-white px-4 py-2 rounded text-sm font-medium">View Full Update</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- How It Works -->
+	<section class="py-16 sm:py-20 bg-white">
+		<div class="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
+			<div class="text-center mb-16">
+				<h2 class="text-4xl font-bold text-gray-900 mb-4 font-serif">How it works</h2>
+				<p class="text-xl text-gray-600 leading-relaxed">Getting started is simple</p>
+			</div>
+
+			<div class="relative">
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+					<div class="text-center relative">
+						<div class="w-16 h-16 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10">
+							<span class="text-white text-2xl font-bold">1</span>
+						</div>
+						<h3 class="text-xl font-semibold text-gray-900 mb-3">Set Up Your Pregnancy</h3>
+						<p class="text-gray-600">
+							Add your due date, partner's name, and baby's nickname. We'll calculate your current week automatically.
+						</p>
+					</div>
+
+					<div class="text-center relative">
+						<div class="w-16 h-16 bg-gradient-to-r from-primary-600 to-primary-700 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10">
+							<span class="text-white text-2xl font-bold">2</span>
+						</div>
+						<h3 class="text-xl font-semibold text-gray-900 mb-3">Build Your Village</h3>
+						<p class="text-gray-600">
+							Add family and friends to your village. Choose who to tell about your pregnancy and when.
+						</p>
+					</div>
+
+					<div class="text-center relative">
+						<div class="w-16 h-16 bg-gradient-to-r from-primary-700 to-primary-800 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10">
+							<span class="text-white text-2xl font-bold">3</span>
+						</div>
+						<h3 class="text-xl font-semibold text-gray-900 mb-3">Share Your Journey</h3>
+						<p class="text-gray-600">
+							Post updates, photos, and appointment news. Your village gets email updates automatically.
+						</p>
+					</div>
+				</div>
+				
+				<!-- Dotted connecting lines -->
+				<div class="hidden md:block absolute top-8 left-0 right-0">
+					<div class="flex justify-between items-center px-20">
+						<div class="w-1/3 h-0.5 border-t-2 border-dotted border-primary-300"></div>
+						<div class="w-16"></div>
+						<div class="w-1/3 h-0.5 border-t-2 border-dotted border-primary-300"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Testimonials -->
+	<section class="py-16 sm:py-20 bg-gray-50">
+		<div class="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
+			<div class="text-center mb-16">
+				<h2 class="text-4xl font-bold text-gray-900 mb-4 font-serif">Loved by expecting families</h2>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				<div class="card p-6">
+					<div class="flex items-center mb-4">
+						<div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-semibold">S</div>
+						<div class="ml-3">
+							<h4 class="font-semibold text-gray-900">Sarah M.</h4>
+							<p class="text-sm text-gray-500">First-time mom</p>
+						</div>
+					</div>
+					<p class="text-gray-600 italic">
+						"40weeks made sharing our pregnancy so much easier! I love that I can track who knows and who doesn't. No more awkward conversations."
+					</p>
+				</div>
+
+				<div class="card p-6">
+					<div class="flex items-center mb-4">
+						<div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">M</div>
+						<div class="ml-3">
+							<h4 class="font-semibold text-gray-900">Mike & Jenny</h4>
+							<p class="text-sm text-gray-500">Expecting #2</p>
+						</div>
+					</div>
+					<p class="text-gray-600 italic">
+						"The email updates are beautiful! Our families love getting the weekly photos and appointment summaries. It keeps everyone connected."
+					</p>
+				</div>
+
+				<div class="card p-6">
+					<div class="flex items-center mb-4">
+						<div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold">L</div>
+						<div class="ml-3">
+							<h4 class="font-semibold text-gray-900">Lisa K.</h4>
+							<p class="text-sm text-gray-500">Mom of twins</p>
+						</div>
+					</div>
+					<p class="text-gray-600 italic">
+						"Perfect for busy parents! I can share updates when I have time, and everyone stays in the loop. The milestone tracking is fantastic."
+					</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- CTA Section -->
+	<section class="py-16 sm:py-20 gradient-bg">
+		<div class="max-w-4xl mx-auto px-6 sm:px-6 lg:px-8 text-center">
+			<h2 class="text-4xl font-bold text-white mb-6 font-serif">
+				Ready to start your 40-week journey?
+			</h2>
+			<p class="text-xl text-white/90 mb-8 leading-relaxed">
+				Join expecting families who are already sharing their pregnancy journey with 40weeks. 
+				Your village is waiting to celebrate with you.
+			</p>
+			<div class="flex flex-col sm:flex-row gap-4 justify-center">
+				<a href="/register" class="btn-primary bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold shadow-lg">
+					Create Your Village Today
+				</a>
+				<a href="/login" class="btn-secondary bg-white/10 backdrop-blur-sm text-white border-white/20 px-8 py-4 rounded-lg text-lg font-semibold">
+					Already have an account?
+				</a>
+			</div>
+		</div>
+	</section>
+
+	<!-- Footer -->
+	<footer class="bg-gray-900 text-white py-12">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+				<div class="md:col-span-2">
+					<h3 class="text-2xl font-bold mb-4 font-serif">40Weeks</h3>
+					<p class="text-gray-300 mb-4 max-w-md">
+						Helping expecting families share their pregnancy journey with the people who matter most.
+					</p>
+				</div>
+				
+				<div>
+					<h4 class="font-semibold mb-4">Product</h4>
+					<ul class="space-y-2 text-gray-300">
+						<li><a href="#features" class="hover:text-white">Features</a></li>
+						<li><a href="/register" class="hover:text-white">Get Started</a></li>
+					</ul>
+				</div>
+				
+				<div>
+					<h4 class="font-semibold mb-4">Support</h4>
+					<ul class="space-y-2 text-gray-300">
+						<li><a href="#" class="hover:text-white">Help Center</a></li>
+						<li><a href="/legal" class="hover:text-white">Privacy Policy</a></li>
+						<li><a href="/legal" class="hover:text-white">Terms of Service</a></li>
+						<li><a href="#" class="hover:text-white">Contact Us</a></li>
+					</ul>
+				</div>
+			</div>
+			
+			<div class="border-t border-gray-800 pt-8 mt-8 text-center text-gray-400">
+				<p>&copy; 2025 40Weeks. Made with love for expecting families.</p>
+			</div>
+		</div>
+	</footer>
+
+	<script>
+		// Smooth scrolling for anchor links
+		document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+			anchor.addEventListener('click', function (e) {
+				e.preventDefault();
+				const target = document.querySelector(this.getAttribute('href'));
+				if (target) {
+					target.scrollIntoView({
+						behavior: 'smooth',
+						block: 'start'
+					});
+				}
+			});
+		});
+
+		// Beta signup form handler
+		document.getElementById('betaSignupForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			
+			const email = document.getElementById('betaEmail').value.trim();
+			
+			// Basic validation
+			if (!email) {
+				showMessage('Please enter your email address', 'error');
+				return;
+			}
+			
+			// Redirect to register page with email pre-populated
+			window.location.href = `/register?email=${encodeURIComponent(email)}`;
+		});
+		
+		function showMessage(message, type) {
+			const messageDiv = document.getElementById('betaMessage');
+			messageDiv.textContent = message;
+			messageDiv.className = `text-sm mt-3 text-center ${type === 'success' ? 'text-green-100' : 'text-red-100'}`;
+			messageDiv.classList.remove('hidden');
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>40Weeks - Set Up Your Pregnancy</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						'sans': ['Poppins', 'system-ui', 'sans-serif'],
+						'serif': ['DM Serif Display', 'serif'],
+					},
+					colors: {
+						primary: {
+							50: '#fffbeb',
+							100: '#fef3c7',
+							200: '#fde68a',
+							300: '#fcd34d',
+							400: '#fbbf24',
+							500: '#f59e0b',
+							600: '#d97706',
+							700: '#b45309',
+							800: '#92400e',
+							900: '#78350f'
+						}
+					}
+				}
+			}
+		}
+	</script>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+	<style>
+		/* Shadcn-inspired custom styles */
+		:root {
+			--background: 0 0% 100%;
+			--foreground: 240 10% 3.9%;
+			--card: 0 0% 100%;
+			--card-foreground: 240 10% 3.9%;
+			--primary: 240 5.9% 10%;
+			--primary-foreground: 0 0% 98%;
+			--secondary: 240 4.8% 95.9%;
+			--secondary-foreground: 240 5.9% 10%;
+			--muted: 240 4.8% 95.9%;
+			--muted-foreground: 240 3.8% 46.1%;
+			--destructive: 0 84.2% 60.2%;
+			--destructive-foreground: 0 0% 98%;
+			--border: 240 5.9% 90%;
+			--input: 240 5.9% 90%;
+			--ring: 240 10% 3.9%;
+			--radius: 0.5rem;
+		}
+		
+		body {
+			font-family: 'Poppins', sans-serif;
+		}
+		
+		
+		.card {
+			background-color: hsl(var(--card));
+			color: hsl(var(--card-foreground));
+			border-radius: var(--radius);
+			border: 1px solid hsl(var(--border));
+			box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+		}
+		
+		.input {
+			background-color: transparent;
+			border: 1px solid hsl(var(--input));
+			border-radius: calc(var(--radius) - 2px);
+		}
+		
+		.input:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			border-color: hsl(var(--ring));
+			box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+		}
+		
+		.btn-primary {
+			background-color: hsl(var(--primary));
+			color: hsl(var(--primary-foreground));
+		}
+		
+		.btn-primary:hover {
+			background-color: hsl(var(--primary) / 0.9);
+		}
+		
+		.btn-primary:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+		}
+		
+		.btn-secondary {
+			background-color: hsl(var(--secondary));
+			color: hsl(var(--secondary-foreground));
+		}
+		
+		.btn-secondary:hover {
+			background-color: hsl(var(--secondary) / 0.8);
+		}
+	</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+	<!-- Header -->
+	<header class="bg-white border-b border-gray-200">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="flex justify-between items-center h-16">
+				<div class="flex items-center">
+					<h1 class="text-xl font-semibold text-gray-900 font-serif">40Weeks</h1>
+				</div>
+				<button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700">
+					Sign out
+				</button>
+			</div>
+		</div>
+	</header>
+
+	<div class="max-w-2xl mx-auto px-4 py-8">
+		<!-- Welcome Header -->
+		<div class="text-center mb-8">
+			<h1 class="text-3xl font-bold text-gray-900 mb-2 font-serif">Welcome to 40Weeks!</h1>
+			<p class="text-lg text-gray-600">
+				Let's set up your pregnancy journey and start building your village
+			</p>
+		</div>
+
+		<!-- Setup Form -->
+		<div class="card p-8">
+			<form id="pregnancySetupForm" class="space-y-6">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<!-- Due Date -->
+					<div class="md:col-span-2">
+						<label for="dueDate" class="block text-sm font-medium text-gray-700 mb-2">
+							Due Date <span class="text-red-500">*</span>
+						</label>
+						<input 
+							type="date" 
+							id="dueDate" 
+							name="dueDate" 
+							required
+							class="input w-full px-3 py-2 text-sm transition-colors"
+						>
+						<p class="text-xs text-gray-500 mt-1">
+							Don't worry if you're not sure - we can always update this later
+						</p>
+					</div>
+
+					<!-- Partner Name (Optional) -->
+					<div class="md:col-span-2">
+						<label for="partnerName" class="block text-sm font-medium text-gray-700 mb-2">
+							Partner's Name (optional)
+						</label>
+						<input 
+							type="text" 
+							id="partnerName" 
+							name="partnerName" 
+							class="input w-full px-3 py-2 text-sm transition-colors"
+							placeholder="Partner's name"
+						>
+					</div>
+
+					<!-- Baby Name (Optional) -->
+					<div class="md:col-span-2">
+						<label for="babyName" class="block text-sm font-medium text-gray-700 mb-2">
+							Baby's Name (optional)
+						</label>
+						<input 
+							type="text" 
+							id="babyName" 
+							name="babyName" 
+							class="input w-full px-3 py-2 text-sm transition-colors"
+							placeholder="Baby's name or nickname"
+						>
+						<p class="text-xs text-gray-500 mt-1">
+							You can use a nickname like "Baby Smith" or "Little One"
+						</p>
+					</div>
+
+					<!-- Conception Date (Optional) -->
+					<div class="md:col-span-2">
+						<label for="conceptionDate" class="block text-sm font-medium text-gray-700 mb-2">
+							Conception Date (optional)
+						</label>
+						<input 
+							type="date" 
+							id="conceptionDate" 
+							name="conceptionDate" 
+							class="input w-full px-3 py-2 text-sm transition-colors"
+						>
+						<p class="text-xs text-gray-500 mt-1">
+							If you know it, this helps us calculate your exact week more accurately
+						</p>
+					</div>
+				</div>
+
+				<!-- Current Week Display -->
+				<div id="weekDisplay" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4">
+					<div class="flex items-center">
+						<div class="flex-shrink-0">
+							<svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+							</svg>
+						</div>
+						<div class="ml-3">
+							<p class="text-sm text-blue-700">
+								<span class="font-medium">You're currently in </span>
+								<span id="currentWeek" class="font-bold"></span>
+								<span class="font-medium"> of your pregnancy!</span>
+							</p>
+						</div>
+					</div>
+				</div>
+
+				<div id="error" class="hidden">
+					<div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+						<span id="error-message"></span>
+					</div>
+				</div>
+
+				<div class="flex justify-center pt-4">
+					<button 
+						type="submit"
+						class="btn-primary w-full md:w-auto px-8 py-3 rounded-md text-sm font-medium transition-colors focus:outline-none"
+					>
+						Continue to Village Setup
+					</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- Info Box -->
+		<div class="mt-8 card p-6">
+			<h3 class="text-lg font-medium text-gray-900 mb-3">What happens next?</h3>
+			<div class="space-y-3 text-sm text-gray-600">
+				<div class="flex items-start">
+					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">1</span>
+					<p>We'll help you build your "village" - the friends and family you want to share updates with</p>
+				</div>
+				<div class="flex items-start">
+					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">2</span>
+					<p>Track who knows about your pregnancy and who doesn't</p>
+				</div>
+				<div class="flex items-start">
+					<span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">3</span>
+					<p>Share weekly updates, photos, and appointment summaries with your village</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script>
+		const token = localStorage.getItem('jwt_token');
+		
+		if (!token) {
+			window.location.href = '/login';
+		}
+		
+		// Calculate and display current week when due date changes
+		document.getElementById('dueDate').addEventListener('change', function() {
+			calculateCurrentWeek();
+		});
+		
+		document.getElementById('conceptionDate').addEventListener('change', function() {
+			calculateCurrentWeek();
+		});
+		
+		function calculateCurrentWeek() {
+			const dueDate = document.getElementById('dueDate').value;
+			const conceptionDate = document.getElementById('conceptionDate').value;
+			
+			if (!dueDate) {
+				document.getElementById('weekDisplay').classList.add('hidden');
+				return;
+			}
+			
+			const now = new Date();
+			let startDate;
+			
+			if (conceptionDate) {
+				startDate = new Date(conceptionDate);
+			} else {
+				// Calculate conception from due date (40 weeks back)
+				startDate = new Date(dueDate);
+				startDate.setDate(startDate.getDate() - 280); // 40 weeks = 280 days
+			}
+			
+			const diffTime = now - startDate;
+			const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+			const weeks = Math.floor(diffDays / 7) + 1; // Pregnancy weeks start at 1
+			
+			if (weeks > 0 && weeks <= 42) {
+				document.getElementById('currentWeek').textContent = `week ${weeks}`;
+				document.getElementById('weekDisplay').classList.remove('hidden');
+			} else {
+				document.getElementById('weekDisplay').classList.add('hidden');
+			}
+		}
+		
+		document.getElementById('pregnancySetupForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			
+			const formData = new FormData(e.target);
+			const data = {
+				due_date: formData.get('dueDate'),
+				partner_name: formData.get('partnerName') || null,
+				baby_name: formData.get('babyName') || null,
+				conception_date: formData.get('conceptionDate') || null
+			};
+			
+			const errorDiv = document.getElementById('error');
+			const errorMessage = document.getElementById('error-message');
+			
+			// Hide error initially
+			errorDiv.classList.add('hidden');
+			
+			try {
+				const response = await fetch('/api/pregnancy', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': 'Bearer ' + token
+					},
+					body: JSON.stringify(data)
+				});
+				
+				if (response.ok) {
+					// Redirect to village setup
+					window.location.href = '/village-setup';
+				} else {
+					const errorText = await response.text();
+					errorDiv.classList.remove('hidden');
+					errorMessage.textContent = errorText || 'Failed to create pregnancy profile. Please try again.';
+				}
+			} catch (err) {
+				errorDiv.classList.remove('hidden');
+				errorMessage.textContent = 'Network error. Please try again.';
+			}
+		});
+		
+		function logout() {
+			localStorage.removeItem('jwt_token');
+			window.location.href = '/login';
+		}
+		
+		// Set minimum due date to today
+		const today = new Date().toISOString().split('T')[0];
+		document.getElementById('dueDate').setAttribute('min', today);
+		
+		// Set maximum conception date to today
+		document.getElementById('conceptionDate').setAttribute('max', today);
+	</script>
+</body>
+</html>

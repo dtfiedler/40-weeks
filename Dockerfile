@@ -4,13 +4,13 @@ FROM golang:1.20-bullseye AS builder
 WORKDIR /app
 
 # Copy go mod files
-COPY go.mod go.sum ./
+COPY api/go.mod api/go.sum ./
 
 # Download dependencies
 RUN go mod download
 
-# Copy source code
-COPY . .
+# Copy api source code
+COPY api/ .
 
 # Build the application
 RUN CGO_ENABLED=1 go build -o simple-go main.go

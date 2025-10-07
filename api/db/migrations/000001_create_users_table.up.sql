@@ -1,0 +1,10 @@
+-- Enable WAL mode for better performance and concurrency
+PRAGMA journal_mode=WAL;
+
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

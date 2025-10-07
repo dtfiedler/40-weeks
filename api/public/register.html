@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Register - 40Weeks</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Create your 40Weeks account to start sharing your pregnancy journey with your village.">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						'sans': ['Poppins', 'system-ui', 'sans-serif'],
+						'serif': ['DM Serif Display', 'serif'],
+					},
+					colors: {
+						primary: {
+							50: '#fffbeb',
+							100: '#fef3c7',
+							200: '#fde68a',
+							300: '#fcd34d',
+							400: '#fbbf24',
+							500: '#f59e0b',
+							600: '#d97706',
+							700: '#b45309',
+							800: '#92400e',
+							900: '#78350f'
+						}
+					}
+				}
+			}
+		}
+	</script>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+	<style>
+		/* Shadcn-inspired custom styles */
+		:root {
+			--background: 0 0% 100%;
+			--foreground: 240 10% 3.9%;
+			--card: 0 0% 100%;
+			--card-foreground: 240 10% 3.9%;
+			--primary: 240 5.9% 10%;
+			--primary-foreground: 0 0% 98%;
+			--secondary: 240 4.8% 95.9%;
+			--secondary-foreground: 240 5.9% 10%;
+			--muted: 240 4.8% 95.9%;
+			--muted-foreground: 240 3.8% 46.1%;
+			--accent: 217 91% 60%;
+			--accent-foreground: 0 0% 98%;
+			--destructive: 0 84.2% 60.2%;
+			--destructive-foreground: 0 0% 98%;
+			--border: 240 5.9% 90%;
+			--input: 240 5.9% 90%;
+			--ring: 240 10% 3.9%;
+			--radius: 0.5rem;
+		}
+		
+		body {
+			font-family: 'Poppins', sans-serif;
+		}
+		
+		.card {
+			background-color: hsl(var(--card));
+			color: hsl(var(--card-foreground));
+			border-radius: var(--radius);
+			border: 1px solid hsl(var(--border));
+			box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+		}
+		
+		.input {
+			background-color: transparent;
+			border: 1px solid hsl(var(--input));
+			border-radius: calc(var(--radius) - 2px);
+		}
+		
+		.input:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			border-color: hsl(var(--ring));
+			box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+		}
+		
+		.btn-primary {
+			background-color: hsl(var(--primary));
+			color: hsl(var(--primary-foreground));
+			transition: all 0.2s ease;
+		}
+		
+		.btn-primary:hover {
+			background-color: hsl(var(--primary) / 0.9);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.15);
+		}
+		
+		.btn-primary:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+		}
+
+		.hero-gradient {
+			background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+		}
+
+		.btn-secondary {
+			background-color: transparent;
+			color: hsl(var(--foreground));
+			border: 1px solid hsl(var(--border));
+			transition: all 0.2s ease;
+		}
+		
+		.btn-secondary:hover {
+			background-color: hsl(var(--muted));
+		}
+	</style>
+</head>
+<body class="bg-gray-50">
+	<!-- Navigation -->
+	<nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="flex justify-between items-center h-16">
+				<div class="flex items-center">
+					<a href="/" class="text-2xl font-bold text-gray-900 font-serif">40Weeks</a>
+					<span class="ml-2 text-sm text-primary-500 font-medium">BETA</span>
+				</div>
+				<div class="flex items-center space-x-4">
+					<a href="/login" class="text-gray-600 hover:text-gray-900 font-medium">Sign In</a>
+				</div>
+			</div>
+		</div>
+	</nav>
+
+	<div class="min-h-screen flex items-center justify-center px-4 py-12">
+		<div class="w-full max-w-md">
+			<!-- Logo/Title -->
+			<div class="text-center mb-8">
+				<h1 class="text-4xl font-bold text-gray-900 font-serif mb-6">Start Your Journey</h1>
+				<p class="text-lg text-gray-600 mb-2">Create your 40Weeks account</p>
+				<p class="text-sm text-gray-500">Start sharing your pregnancy journey with the people who matter most</p>
+			</div>
+			
+			<!-- Register Card -->
+			<div class="card p-8">
+				<form id="registerForm" class="space-y-6">
+					<div>
+						<label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+							Full Name
+						</label>
+						<input 
+							type="text" 
+							id="name" 
+							name="name" 
+							required
+							class="input w-full px-4 py-3 text-sm transition-colors"
+							placeholder="Enter your full name"
+						>
+					</div>
+					
+					<div>
+						<label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+							Email Address
+						</label>
+						<input 
+							type="email" 
+							id="email" 
+							name="email" 
+							required
+							class="input w-full px-4 py-3 text-sm transition-colors"
+							placeholder="Enter your email address"
+						>
+					</div>
+					
+					<div>
+						<label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+							Password
+						</label>
+						<input 
+							type="password" 
+							id="password" 
+							name="password" 
+							required
+							minlength="6"
+							class="input w-full px-4 py-3 text-sm transition-colors"
+							placeholder="Create a password (min 6 characters)"
+						>
+					</div>
+					
+					<button 
+						type="submit"
+						class="btn-primary w-full px-4 py-3 rounded-lg text-lg font-semibold transition-colors focus:outline-none"
+					>
+						Create Your Village
+					</button>
+					
+					<div id="message" class="hidden">
+						<div class="px-4 py-3 rounded-md text-sm">
+							<span id="message-text"></span>
+						</div>
+					</div>
+				</form>
+				
+				<div class="mt-8 pt-6 border-t border-gray-200">
+					<p class="text-center text-sm text-gray-500">
+						Already have an account? 
+						<a href="/login" class="font-medium text-primary-600 hover:text-primary-700">Sign in here</a>
+					</p>
+				</div>
+			</div>
+
+			<!-- Back to Home -->
+			<div class="text-center mt-6">
+				<a href="/" class="text-sm text-gray-500 hover:text-gray-700">
+					← Back to Home
+				</a>
+			</div>
+		</div>
+	</div>
+	
+	<script>
+		document.getElementById('registerForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			
+			const name = document.getElementById('name').value;
+			const email = document.getElementById('email').value;
+			const password = document.getElementById('password').value;
+			const messageDiv = document.getElementById('message');
+			const messageText = document.getElementById('message-text');
+			const submitBtn = e.target.querySelector('button[type="submit"]');
+			
+			// Hide message initially
+			messageDiv.classList.add('hidden');
+			
+			// Show loading state
+			const originalText = submitBtn.textContent;
+			submitBtn.textContent = 'Creating Account...';
+			submitBtn.disabled = true;
+			
+			try {
+				const response = await fetch('/api/register', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ name, email, password })
+				});
+				
+				if (response.ok) {
+					const data = await response.json();
+					messageDiv.classList.remove('hidden');
+					messageDiv.firstElementChild.className = 'bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm';
+					messageText.textContent = 'Account created successfully! Logging you in...';
+					
+					// Store token and redirect to dashboard
+					if (data.token) {
+						localStorage.setItem('jwt_token', data.token);
+						setTimeout(() => {
+							window.location.href = '/dashboard';
+						}, 1500);
+					} else {
+						// Fallback to login page if no token
+						setTimeout(() => {
+							window.location.href = '/login';
+						}, 2000);
+					}
+				} else {
+					const errorText = await response.text();
+					messageDiv.classList.remove('hidden');
+					messageDiv.firstElementChild.className = 'bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm';
+					messageText.textContent = errorText || 'Registration failed. Please try again.';
+				}
+			} catch (err) {
+				messageDiv.classList.remove('hidden');
+				messageDiv.firstElementChild.className = 'bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm';
+				messageText.textContent = 'Registration failed. Please try again.';
+			} finally {
+				// Reset button state
+				submitBtn.textContent = originalText;
+				submitBtn.disabled = false;
+			}
+		});
+		
+		// Check for email parameter in URL and pre-populate
+		const urlParams = new URLSearchParams(window.location.search);
+		const emailParam = urlParams.get('email');
+		if (emailParam) {
+			document.getElementById('email').value = emailParam;
+			// Focus on name field if email is pre-populated
+			document.getElementById('name').focus();
+		} else {
+			// Auto-focus name field
+			document.getElementById('name').focus();
+		}
+	</script>
+</body>
+</html>
