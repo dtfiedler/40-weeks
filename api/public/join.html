@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Join Pregnancy Village - 40Weeks</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						'sans': ['Poppins', 'system-ui', 'sans-serif'],
+						'serif': ['DM Serif Display', 'serif'],
+					},
+					colors: {
+						primary: {
+							50: '#fffbeb',
+							100: '#fef3c7',
+							200: '#fde68a',
+							300: '#fcd34d',
+							400: '#fbbf24',
+							500: '#f59e0b',
+							600: '#d97706',
+							700: '#b45309',
+							800: '#92400e',
+							900: '#78350f'
+						}
+					}
+				}
+			}
+		}
+	</script>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+	<style>
+		/* Shadcn-inspired custom styles */
+		:root {
+			--background: 0 0% 100%;
+			--foreground: 240 10% 3.9%;
+			--card: 0 0% 100%;
+			--card-foreground: 240 10% 3.9%;
+			--primary: 240 5.9% 10%;
+			--primary-foreground: 0 0% 98%;
+			--secondary: 240 4.8% 95.9%;
+			--secondary-foreground: 240 5.9% 10%;
+			--muted: 240 4.8% 95.9%;
+			--muted-foreground: 240 3.8% 46.1%;
+			--destructive: 0 84.2% 60.2%;
+			--destructive-foreground: 0 0% 98%;
+			--border: 240 5.9% 90%;
+			--input: 240 5.9% 90%;
+			--ring: 240 10% 3.9%;
+			--radius: 0.5rem;
+		}
+		
+		body {
+			font-family: 'Poppins', sans-serif;
+		}
+		
+		.card {
+			background-color: hsl(var(--card));
+			color: hsl(var(--card-foreground));
+			border-radius: var(--radius);
+			border: 1px solid hsl(var(--border));
+			box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+		}
+		
+		.input {
+			background-color: transparent;
+			border: 1px solid hsl(var(--input));
+			border-radius: calc(var(--radius) - 2px);
+		}
+		
+		.input:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			border-color: hsl(var(--ring));
+			box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+		}
+		
+		.btn-primary {
+			background-color: hsl(var(--primary));
+			color: hsl(var(--primary-foreground));
+		}
+		
+		.btn-primary:hover {
+			background-color: hsl(var(--primary) / 0.9);
+		}
+		
+		.btn-primary:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+		}
+		
+		.btn-secondary {
+			background-color: hsl(var(--secondary));
+			color: hsl(var(--secondary-foreground));
+			border: 1px solid hsl(var(--border));
+		}
+		
+		.btn-secondary:hover {
+			background-color: hsl(var(--secondary) / 0.8);
+		}
+
+		.gradient-bg {
+			background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+		}
+	</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+	<!-- Header -->
+	<header class="bg-white border-b border-gray-200">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="flex justify-between items-center h-16">
+				<div class="flex items-center">
+					<h1 class="text-xl font-semibold text-gray-900 font-serif">40Weeks</h1>
+					<span class="ml-2 text-sm text-primary-500 font-medium">BETA</span>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<div class="max-w-2xl mx-auto px-4 py-8">
+		<!-- Loading State -->
+		<div id="loading" class="text-center py-12">
+			<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+			<p class="text-gray-600">Loading invitation...</p>
+		</div>
+
+		<!-- Invalid Invitation -->
+		<div id="invalidInvite" class="hidden text-center py-12">
+			<div class="card p-8">
+				<div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+					<svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</div>
+				<h2 class="text-2xl font-bold text-gray-900 mb-2">Invalid Invitation</h2>
+				<p class="text-gray-600 mb-6">This invitation link is invalid or has expired.</p>
+				<a href="/" class="btn-primary px-6 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none inline-block">
+					Go to Home
+				</a>
+			</div>
+		</div>
+
+		<!-- Join Form -->
+		<div id="joinForm" class="hidden">
+			<!-- Welcome Header -->
+			<div class="text-center mb-8">
+				<div class="gradient-bg w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+					<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+					</svg>
+				</div>
+				<h1 class="text-3xl font-bold text-gray-900 mb-2 font-serif" id="inviteTitle">Join the Village!</h1>
+				<p class="text-lg text-gray-600" id="inviteDescription">
+					You're invited to follow along with this pregnancy journey and get updates!
+				</p>
+			</div>
+
+			<!-- Join Form -->
+			<div class="card p-6 mb-8">
+				<h2 class="text-xl font-semibold text-gray-900 mb-4">Add Yourself to the Village</h2>
+				<form id="memberJoinForm" class="space-y-4">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+							<input 
+								type="text" 
+								name="memberName" 
+								class="input w-full px-3 py-2 text-sm" 
+								placeholder="Enter your name (or names for couple)"
+								required
+							>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Email(s) *</label>
+							<input 
+								type="text" 
+								name="memberEmail" 
+								class="input w-full px-3 py-2 text-sm" 
+								placeholder="email@example.com or email1@example.com, email2@example.com"
+								required
+							>
+							<p class="text-xs text-gray-500 mt-1">For couples, separate emails with commas</p>
+						</div>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Relationship *</label>
+							<select name="memberRelationship" class="input w-full px-3 py-2 text-sm" required>
+								<option value="">Select relationship</option>
+								<option value="mother">Mother</option>
+								<option value="father">Father</option>
+								<option value="parents">Parents (both)</option>
+								<option value="mother-in-law">Mother-in-law</option>
+								<option value="father-in-law">Father-in-law</option>
+								<option value="in-laws">In-laws (both)</option>
+								<option value="sister">Sister</option>
+								<option value="brother">Brother</option>
+								<option value="siblings">Siblings</option>
+								<option value="friend">Friend</option>
+								<option value="friends">Friends</option>
+								<option value="coworker">Coworker</option>
+								<option value="other">Other</option>
+							</select>
+						</div>
+						<div class="flex items-end">
+							<label class="flex items-center space-x-2 text-sm text-gray-700">
+								<input 
+									type="checkbox" 
+									name="knowsAboutPregnancy" 
+									class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+									checked
+								>
+								<span>I know about the pregnancy</span>
+							</label>
+						</div>
+					</div>
+					<div class="flex justify-end pt-4">
+						<button 
+							type="submit"
+							class="btn-primary px-8 py-3 rounded-md text-lg font-medium transition-colors focus:outline-none"
+						>
+							Join Village
+						</button>
+					</div>
+				</form>
+			</div>
+
+			<!-- Info Box -->
+			<div class="card p-6">
+				<h3 class="text-lg font-medium text-gray-900 mb-3">What to Expect</h3>
+				<div class="space-y-3 text-sm text-gray-600">
+					<div class="flex items-start">
+						<span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">✉️</span>
+						<p>You'll receive email updates about pregnancy milestones and special moments</p>
+					</div>
+					<div class="flex items-start">
+						<span class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">👥</span>
+						<p>You can see who else is in the village (for coordination and avoiding spoilers)</p>
+					</div>
+					<div class="flex items-start">
+						<span class="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">🔒</span>
+						<p>Your email is private and you can unsubscribe at any time</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Success State -->
+		<div id="successState" class="hidden text-center py-12">
+			<div class="card p-8">
+				<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+					<svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+					</svg>
+				</div>
+				<h2 class="text-2xl font-bold text-gray-900 mb-2">Welcome to the Village!</h2>
+				<p class="text-gray-600 mb-6">You've successfully joined and will receive updates about this pregnancy journey.</p>
+			</div>
+		</div>
+	</div>
+
+	<div id="error" class="hidden fixed top-4 right-4 z-50">
+		<div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm max-w-sm">
+			<span id="error-message"></span>
+		</div>
+	</div>
+
+	<div id="success" class="hidden fixed top-4 right-4 z-50">
+		<div class="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm max-w-sm">
+			<span id="success-message"></span>
+		</div>
+	</div>
+	
+	<script>
+		let pregnancyInfo = null;
+		const inviteHash = window.location.pathname.split('/share/')[1];
+
+		// Load pregnancy info from hash
+		async function loadPregnancyInfo() {
+			if (!inviteHash) {
+				showInvalidInvite();
+				return;
+			}
+
+			try {
+				const response = await fetch(`/api/pregnancy/invite/${inviteHash}`);
+				
+				if (response.ok) {
+					pregnancyInfo = await response.json();
+					showJoinForm();
+				} else {
+					showInvalidInvite();
+				}
+			} catch (err) {
+				showInvalidInvite();
+			}
+		}
+
+		function showInvalidInvite() {
+			document.getElementById('loading').classList.add('hidden');
+			document.getElementById('invalidInvite').classList.remove('hidden');
+		}
+
+		function showJoinForm() {
+			document.getElementById('loading').classList.add('hidden');
+			document.getElementById('joinForm').classList.remove('hidden');
+			
+			// Update page content with pregnancy info
+			if (pregnancyInfo.baby_name && pregnancyInfo.baby_name !== 'Baby') {
+				document.getElementById('inviteTitle').textContent = `Join ${pregnancyInfo.parent_names}'s Village!`;
+				document.getElementById('inviteDescription').textContent = 
+					`${pregnancyInfo.parent_names} want you to follow along with ${pregnancyInfo.baby_name}'s journey. Add yourself to get updates about their pregnancy!`;
+			} else {
+				document.getElementById('inviteTitle').textContent = `Join ${pregnancyInfo.parent_names}'s Village!`;
+				document.getElementById('inviteDescription').textContent = 
+					`${pregnancyInfo.parent_names} want you to follow along with their pregnancy journey. Add yourself to get updates!`;
+			}
+		}
+
+		function showSuccessState() {
+			document.getElementById('joinForm').classList.add('hidden');
+			document.getElementById('successState').classList.remove('hidden');
+		}
+
+		// Parse emails and validate format
+		function parseAndValidateEmails(emailString) {
+			const emailList = emailString.split(',').map(email => email.trim()).filter(email => email);
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			
+			for (const email of emailList) {
+				if (!emailRegex.test(email)) {
+					throw new Error(`Invalid email format: ${email}`);
+				}
+			}
+			
+			return emailList;
+		}
+
+		// Join village form handler
+		document.getElementById('memberJoinForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			
+			const formData = new FormData(e.target);
+			const memberData = {
+				name: formData.get('memberName').trim(),
+				emails: formData.get('memberEmail').trim(),
+				relationship: formData.get('memberRelationship'),
+				is_told: formData.get('knowsAboutPregnancy') === 'on'
+			};
+
+			// Validate required fields
+			if (!memberData.name || !memberData.emails || !memberData.relationship) {
+				showError('Please fill in all required fields');
+				return;
+			}
+
+			try {
+				const emailList = parseAndValidateEmails(memberData.emails);
+				
+				const response = await fetch(`/api/pregnancy/join/${inviteHash}`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						name: memberData.name,
+						emails: emailList,
+						relationship: memberData.relationship,
+						is_told: memberData.is_told
+					})
+				});
+				
+				if (response.ok) {
+					showSuccessState();
+				} else {
+					const errorText = await response.text();
+					showError(errorText || 'Failed to join village');
+				}
+			} catch (err) {
+				if (err.message.includes('Invalid email format')) {
+					showError(err.message);
+				} else {
+					showError('Network error. Please try again.');
+				}
+			}
+		});
+
+		function showError(message) {
+			const errorDiv = document.getElementById('error');
+			const errorMessage = document.getElementById('error-message');
+			errorMessage.textContent = message;
+			errorDiv.classList.remove('hidden');
+			setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+		}
+
+		function showSuccess(message) {
+			const successDiv = document.getElementById('success');
+			const successMessage = document.getElementById('success-message');
+			successMessage.textContent = message;
+			successDiv.classList.remove('hidden');
+			setTimeout(() => successDiv.classList.add('hidden'), 3000);
+		}
+
+		// Load pregnancy info on page load
+		loadPregnancyInfo();
+	</script>
+</body>
+</html>

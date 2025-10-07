@@ -191,6 +191,43 @@
 			</div>
 		</div>
 
+		<!-- Invite Link Section -->
+		<div class="card p-6 mb-8">
+			<h2 class="text-xl font-semibold text-gray-900 mb-4">Share Your Village Link</h2>
+			<p class="text-gray-600 mb-4">
+				Let people join your village themselves! Share this custom link and they can sign up to receive updates about your pregnancy journey.
+			</p>
+			
+			<div class="space-y-4" id="inviteLinkSection">
+				<div class="flex gap-3">
+					<input 
+						type="text" 
+						id="inviteLink" 
+						class="input flex-1 px-3 py-2 text-sm bg-gray-50" 
+						placeholder="Loading your invite link..."
+						readonly
+					>
+				</div>
+				
+				<div class="flex gap-3">
+					<button 
+						onclick="copyInviteLink()"
+						class="btn-secondary px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none"
+						id="copyLinkBtn"
+					>
+						Copy Link
+					</button>
+					<button 
+						onclick="shareInviteLink()"
+						class="btn-outline px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none"
+						id="shareLinkBtn"
+					>
+						Share Link
+					</button>
+				</div>
+			</div>
+		</div>
+
 		<!-- Action Buttons -->
 		<div class="flex flex-col sm:flex-row gap-4 justify-center">
 			<button 
@@ -570,6 +607,63 @@
 			setTimeout(() => successDiv.classList.add('hidden'), 3000);
 		}
 
+		// Load invite link automatically
+		async function loadInviteLink() {
+			try {
+				const response = await fetch('/api/pregnancy/invite-hash', {
+					method: 'GET',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					const result = await response.json();
+					const inviteLink = `${window.location.origin}/share/${result.hash}`;
+					
+					document.getElementById('inviteLink').value = inviteLink;
+				} else {
+					document.getElementById('inviteLink').placeholder = 'Unable to load invite link';
+				}
+			} catch (err) {
+				document.getElementById('inviteLink').placeholder = 'Unable to load invite link';
+			}
+		}
+
+		// Copy invite link to clipboard
+		async function copyInviteLink() {
+			const linkInput = document.getElementById('inviteLink');
+			try {
+				await navigator.clipboard.writeText(linkInput.value);
+				showSuccess('Link copied to clipboard!');
+			} catch (err) {
+				// Fallback for older browsers
+				linkInput.select();
+				document.execCommand('copy');
+				showSuccess('Link copied to clipboard!');
+			}
+		}
+
+		// Share invite link using Web Share API
+		async function shareInviteLink() {
+			const link = document.getElementById('inviteLink').value;
+			
+			if (navigator.share) {
+				try {
+					await navigator.share({
+						title: 'Join Our Pregnancy Village!',
+						text: 'You\'re invited to follow along with our pregnancy journey. Click the link to join our village and get updates!',
+						url: link
+					});
+				} catch (err) {
+					// User cancelled sharing
+				}
+			} else {
+				// Fallback - copy to clipboard
+				copyInviteLink();
+			}
+		}
+
 		function logout() {
 			localStorage.removeItem('jwt_token');
 			window.location.href = '/login';
@@ -580,6 +674,9 @@
 		
 		// Initialize member rows
 		initializeMemberRows();
+		
+		// Load invite link
+		loadInviteLink();
 	</script>
 </body>
 </html>

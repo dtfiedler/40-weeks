@@ -33,3 +33,7 @@ func AppPageHandler(w http.ResponseWriter, r *http.Request) {
 func VillageSetupPageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "public/village-setup.html")
 }
+
+func SharePageHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "public/join.html")
+}

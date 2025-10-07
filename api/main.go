@@ -48,6 +48,9 @@ func setupRoutes() {
 	http.HandleFunc("/api/profile", middleware.AuthMiddleware(routes.ProfileHandler))
 	http.HandleFunc("/api/pregnancy/current", middleware.AuthMiddleware(handlers.GetPregnancyHandler))
 	http.HandleFunc("/api/pregnancy", middleware.AuthMiddleware(handlers.CreatePregnancyHandler))
+	http.HandleFunc("/api/pregnancy/invite-hash", middleware.AuthMiddleware(handlers.GetInviteHashHandler))
+	http.HandleFunc("/api/pregnancy/invite/", handlers.GetPregnancyFromInviteHandler)
+	http.HandleFunc("/api/pregnancy/join/", handlers.JoinVillageFromInviteHandler)
 	http.HandleFunc("/api/village-members", middleware.AuthMiddleware(villageHandler))
 	http.HandleFunc("/api/village-members/bulk", middleware.AuthMiddleware(handlers.CreateVillageMembersBulkHandler))
 	http.HandleFunc("/api/village-members/", middleware.AuthMiddleware(villageMemberHandler))
@@ -56,6 +59,7 @@ func setupRoutes() {
 	http.HandleFunc("/pregnancy-setup", routes.PregnancySetupPageHandler)
 	http.HandleFunc("/village-setup", routes.VillageSetupPageHandler)
 	http.HandleFunc("/admin", routes.AdminPageHandler)
+	http.HandleFunc("/share/", routes.SharePageHandler)
 
 	// Serve static files from public directory
 	fileServer := http.FileServer(http.Dir("public"))

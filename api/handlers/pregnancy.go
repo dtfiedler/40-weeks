@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"simple-go/api/db"
@@ -22,6 +26,23 @@ type CreatePregnancyRequest struct {
 type PregnancyResponse struct {
 	*models.Pregnancy
 	CurrentWeek int `json:"current_week_calculated"`
+}
+
+type InviteHashResponse struct {
+	Hash string `json:"hash"`
+}
+
+type PregnancyInviteInfo struct {
+	ParentNames string `json:"parent_names"`
+	BabyName    string `json:"baby_name"`
+	DueDate     string `json:"due_date"`
+}
+
+type JoinVillageRequest struct {
+	Name         string   `json:"name"`
+	Emails       []string `json:"emails"`
+	Relationship string   `json:"relationship"`
+	IsTold       bool     `json:"is_told"`
 }
 
 // CreatePregnancyHandler handles creating a new pregnancy
@@ -112,6 +133,183 @@ func GetPregnancyHandler(w http.ResponseWriter, r *http.Request) {
 	response := &PregnancyResponse{
 		Pregnancy:   pregnancy,
 		CurrentWeek: pregnancy.GetCurrentWeek(),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// GetInviteHashHandler returns the invite hash for the user's pregnancy
+func GetInviteHashHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(*middleware.Claims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "No active pregnancy found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	hash := generatePregnancyHash(pregnancy.ID)
+	response := &InviteHashResponse{Hash: hash}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// GetPregnancyFromInviteHandler returns pregnancy info from invite hash
+func GetPregnancyFromInviteHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract hash from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/api/pregnancy/invite/")
+	hash := path
+
+	if hash == "" {
+		http.Error(w, "Invalid invite hash", http.StatusBadRequest)
+		return
+	}
+
+	pregnancyID, err := validatePregnancyHash(hash)
+	if err != nil {
+		http.Error(w, "Invalid or expired invite", http.StatusNotFound)
+		return
+	}
+
+	pregnancy, err := GetPregnancyByID(pregnancyID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Pregnancy not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Get user info to build parent names
+	user, err := GetUserByID(pregnancy.UserID)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	parentNames := user.Name
+	if pregnancy.PartnerName != nil && *pregnancy.PartnerName != "" {
+		parentNames = fmt.Sprintf("%s & %s", user.Name, *pregnancy.PartnerName)
+	}
+
+	babyName := "Baby"
+	if pregnancy.BabyName != nil && *pregnancy.BabyName != "" {
+		babyName = *pregnancy.BabyName
+	}
+
+	response := &PregnancyInviteInfo{
+		ParentNames: parentNames,
+		BabyName:    babyName,
+		DueDate:     pregnancy.DueDate.Format("2006-01-02"),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// JoinVillageFromInviteHandler allows someone to join a village via invite link
+func JoinVillageFromInviteHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract hash from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/api/pregnancy/join/")
+	hash := path
+
+	if hash == "" {
+		http.Error(w, "Invalid invite hash", http.StatusBadRequest)
+		return
+	}
+
+	pregnancyID, err := validatePregnancyHash(hash)
+	if err != nil {
+		http.Error(w, "Invalid or expired invite", http.StatusNotFound)
+		return
+	}
+
+	var req JoinVillageRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Trim whitespace from name and relationship
+	req.Name = strings.TrimSpace(req.Name)
+	req.Relationship = strings.TrimSpace(req.Relationship)
+
+	// Validate required fields
+	if req.Name == "" || len(req.Emails) == 0 || req.Relationship == "" {
+		http.Error(w, "Name, emails, and relationship are required", http.StatusBadRequest)
+		return
+	}
+
+	// Trim whitespace from emails
+	for i, email := range req.Emails {
+		req.Emails[i] = strings.TrimSpace(email)
+		if req.Emails[i] == "" {
+			http.Error(w, "Empty email not allowed", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Check if any emails already exist for this pregnancy
+	for _, email := range req.Emails {
+		existingMember, err := GetVillageMemberByEmail(pregnancyID, email)
+		if err != nil && err != sql.ErrNoRows {
+			log.Printf("Database error checking existing member: %v", err)
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		if existingMember != nil {
+			http.Error(w, fmt.Sprintf("Email %s is already in this village", email), http.StatusConflict)
+			return
+		}
+	}
+
+	// Create village members for each email
+	var members []*models.VillageMember
+	for i, email := range req.Emails {
+		// For multiple emails, append number to name (e.g., "John & Jane" becomes "John & Jane (1)", "John & Jane (2)")
+		memberName := req.Name
+		if len(req.Emails) > 1 {
+			memberName = fmt.Sprintf("%s (%d)", req.Name, i+1)
+		}
+
+		member, err := CreateVillageMember(pregnancyID, memberName, email, req.Relationship, req.IsTold)
+		if err != nil {
+			log.Printf("Failed to create village member: %v", err)
+			http.Error(w, "Failed to create village member", http.StatusInternalServerError)
+			return
+		}
+		members = append(members, member)
+	}
+
+	response := map[string]interface{}{
+		"members": members,
+		"success": true,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -228,4 +426,93 @@ func CreateDefaultMilestones(pregnancyID int, dueDate time.Time) error {
 
 func intPtr(i int) *int {
 	return &i
+}
+
+// generatePregnancyHash creates a hash for a pregnancy ID
+func generatePregnancyHash(pregnancyID int) string {
+	// Use a simple hash of the pregnancy ID - in production you'd want a more secure method
+	hasher := sha256.New()
+	hasher.Write([]byte(fmt.Sprintf("pregnancy_%d_salt_2024", pregnancyID)))
+	hash := hex.EncodeToString(hasher.Sum(nil))
+	// Return first 16 characters for shorter URLs
+	return hash[:16]
+}
+
+// validatePregnancyHash validates a hash and returns the pregnancy ID
+func validatePregnancyHash(hash string) (int, error) {
+	if len(hash) != 16 {
+		return 0, fmt.Errorf("invalid hash length")
+	}
+	
+	// Try to find a pregnancy ID that generates this hash
+	// In production, you'd store the hash in the database for efficiency
+	for pregnancyID := 1; pregnancyID <= 10000; pregnancyID++ {
+		if generatePregnancyHash(pregnancyID) == hash {
+			// Verify the pregnancy exists
+			pregnancy, err := GetPregnancyByID(pregnancyID)
+			if err != nil {
+				continue
+			}
+			if pregnancy != nil {
+				return pregnancyID, nil
+			}
+		}
+	}
+	
+	return 0, fmt.Errorf("invalid hash")
+}
+
+func GetPregnancyByID(pregnancyID int) (*models.Pregnancy, error) {
+	query := `
+		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, created_at, updated_at
+		FROM pregnancies 
+		WHERE id = ?
+		LIMIT 1
+	`
+
+	var pregnancy models.Pregnancy
+	err := db.GetDB().QueryRow(query, pregnancyID).Scan(
+		&pregnancy.ID,
+		&pregnancy.UserID,
+		&pregnancy.PartnerName,
+		&pregnancy.PartnerEmail,
+		&pregnancy.DueDate,
+		&pregnancy.ConceptionDate,
+		&pregnancy.CurrentWeek,
+		&pregnancy.BabyName,
+		&pregnancy.IsActive,
+		&pregnancy.CreatedAt,
+		&pregnancy.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pregnancy, nil
+}
+
+func GetUserByID(userID int) (*db.User, error) {
+	query := `
+		SELECT id, name, email, password, is_admin, created_at
+		FROM users 
+		WHERE id = ?
+		LIMIT 1
+	`
+
+	var user db.User
+	err := db.GetDB().QueryRow(query, userID).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.Password,
+		&user.IsAdmin,
+		&user.Created,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
