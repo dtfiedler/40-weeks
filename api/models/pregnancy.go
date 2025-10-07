@@ -14,6 +14,7 @@ type Pregnancy struct {
 	CurrentWeek    int       `json:"current_week" db:"current_week"`
 	BabyName       *string   `json:"baby_name" db:"baby_name"`
 	IsActive       bool      `json:"is_active" db:"is_active"`
+	ShareID        string    `json:"share_id" db:"share_id"`
 	CreatedAt      time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at" db:"updated_at"`
 }

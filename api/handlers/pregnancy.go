@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -161,8 +162,8 @@ func GetInviteHashHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash := generatePregnancyHash(pregnancy.ID)
-	response := &InviteHashResponse{Hash: hash}
+	// Use the stored share_id instead of generating a hash
+	response := &InviteHashResponse{Hash: pregnancy.ShareID}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
@@ -175,22 +176,16 @@ func GetPregnancyFromInviteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract hash from URL path
+	// Extract share_id from URL path
 	path := strings.TrimPrefix(r.URL.Path, "/api/pregnancy/invite/")
-	hash := path
+	shareID := path
 
-	if hash == "" {
-		http.Error(w, "Invalid invite hash", http.StatusBadRequest)
+	if shareID == "" {
+		http.Error(w, "Invalid share ID", http.StatusBadRequest)
 		return
 	}
 
-	pregnancyID, err := validatePregnancyHash(hash)
-	if err != nil {
-		http.Error(w, "Invalid or expired invite", http.StatusNotFound)
-		return
-	}
-
-	pregnancy, err := GetPregnancyByID(pregnancyID)
+	pregnancy, err := GetPregnancyByShareID(shareID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Pregnancy not found", http.StatusNotFound)
@@ -234,20 +229,22 @@ func JoinVillageFromInviteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract hash from URL path
+	// Extract share_id from URL path
 	path := strings.TrimPrefix(r.URL.Path, "/api/pregnancy/join/")
-	hash := path
+	shareID := path
 
-	if hash == "" {
-		http.Error(w, "Invalid invite hash", http.StatusBadRequest)
+	if shareID == "" {
+		http.Error(w, "Invalid share ID", http.StatusBadRequest)
 		return
 	}
 
-	pregnancyID, err := validatePregnancyHash(hash)
+	pregnancy, err := GetPregnancyByShareID(shareID)
 	if err != nil {
 		http.Error(w, "Invalid or expired invite", http.StatusNotFound)
 		return
 	}
+	
+	pregnancyID := pregnancy.ID
 
 	var req JoinVillageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -317,6 +314,16 @@ func JoinVillageFromInviteHandler(w http.ResponseWriter, r *http.Request) {
 
 // Database functions
 
+// generateShareID creates a unique, URL-safe share ID for a pregnancy
+func generateShareID() (string, error) {
+	// Generate 6 random bytes (will create 12 character hex string)
+	bytes := make([]byte, 6)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
+
 func CreatePregnancy(userID int, dueDate time.Time, partnerName, partnerEmail, babyName *string) (*models.Pregnancy, error) {
 	// Set default baby name if empty
 	if babyName == nil || *babyName == "" {
@@ -324,14 +331,20 @@ func CreatePregnancy(userID int, dueDate time.Time, partnerName, partnerEmail, b
 		babyName = &defaultName
 	}
 
+	// Generate unique share ID
+	shareID, err := generateShareID()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate share ID: %w", err)
+	}
+
 	query := `
-		INSERT INTO pregnancies (user_id, due_date, partner_name, partner_email, baby_name)
-		VALUES (?, ?, ?, ?, ?)
-		RETURNING id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, created_at, updated_at
+		INSERT INTO pregnancies (user_id, due_date, partner_name, partner_email, baby_name, share_id)
+		VALUES (?, ?, ?, ?, ?, ?)
+		RETURNING id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
 	`
 
 	var pregnancy models.Pregnancy
-	err := db.GetDB().QueryRow(query, userID, dueDate, partnerName, partnerEmail, babyName).Scan(
+	err = db.GetDB().QueryRow(query, userID, dueDate, partnerName, partnerEmail, babyName, shareID).Scan(
 		&pregnancy.ID,
 		&pregnancy.UserID,
 		&pregnancy.PartnerName,
@@ -341,6 +354,7 @@ func CreatePregnancy(userID int, dueDate time.Time, partnerName, partnerEmail, b
 		&pregnancy.CurrentWeek,
 		&pregnancy.BabyName,
 		&pregnancy.IsActive,
+		&pregnancy.ShareID,
 		&pregnancy.CreatedAt,
 		&pregnancy.UpdatedAt,
 	)
@@ -360,7 +374,7 @@ func CreatePregnancy(userID int, dueDate time.Time, partnerName, partnerEmail, b
 
 func GetActivePregnancyByUserID(userID int) (*models.Pregnancy, error) {
 	query := `
-		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, created_at, updated_at
+		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
 		FROM pregnancies 
 		WHERE user_id = ? AND is_active = TRUE
 		ORDER BY created_at DESC
@@ -378,6 +392,7 @@ func GetActivePregnancyByUserID(userID int) (*models.Pregnancy, error) {
 		&pregnancy.CurrentWeek,
 		&pregnancy.BabyName,
 		&pregnancy.IsActive,
+		&pregnancy.ShareID,
 		&pregnancy.CreatedAt,
 		&pregnancy.UpdatedAt,
 	)
@@ -427,59 +442,41 @@ func intPtr(i int) *int {
 	return &i
 }
 
-// generatePregnancyHash creates a deterministic, reversible hash for a pregnancy ID
-func generatePregnancyHash(pregnancyID int) string {
-	// Simple XOR-based encoding that's reversible
-	const secret = 0x40202024 // System secret as hex constant (40 = @, 2024 = year)
-	
-	// XOR the pregnancy ID with the secret
-	encoded := pregnancyID ^ secret
-	
-	// Convert to hex string with zero padding
-	return fmt.Sprintf("%08x", encoded)
-}
 
-// validatePregnancyHash validates a hash and returns the pregnancy ID
-func validatePregnancyHash(hash string) (int, error) {
-	if len(hash) != 8 {
-		log.Printf("Invalid hash length: %d, expected 8", len(hash))
-		return 0, fmt.Errorf("invalid hash length")
-	}
-	
-	log.Printf("Validating hash: %s", hash)
-	
-	// Decode the hex string
-	encoded, err := strconv.ParseInt(hash, 16, 64)
+func GetPregnancyByShareID(shareID string) (*models.Pregnancy, error) {
+	query := `
+		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
+		FROM pregnancies 
+		WHERE share_id = ? AND is_active = TRUE
+		LIMIT 1
+	`
+
+	var pregnancy models.Pregnancy
+	err := db.GetDB().QueryRow(query, shareID).Scan(
+		&pregnancy.ID,
+		&pregnancy.UserID,
+		&pregnancy.PartnerName,
+		&pregnancy.PartnerEmail,
+		&pregnancy.DueDate,
+		&pregnancy.ConceptionDate,
+		&pregnancy.CurrentWeek,
+		&pregnancy.BabyName,
+		&pregnancy.IsActive,
+		&pregnancy.ShareID,
+		&pregnancy.CreatedAt,
+		&pregnancy.UpdatedAt,
+	)
+
 	if err != nil {
-		log.Printf("Invalid hex hash: %s", hash)
-		return 0, fmt.Errorf("invalid hash format")
+		return nil, err
 	}
-	
-	// Reverse the XOR to get original pregnancy ID
-	const secret = 0x40202024
-	pregnancyID := int(encoded) ^ secret
-	
-	log.Printf("Decoded pregnancy ID: %d from hash: %s", pregnancyID, hash)
-	
-	// Verify the pregnancy exists and is active
-	pregnancy, err := GetPregnancyByID(pregnancyID)
-	if err != nil {
-		log.Printf("Pregnancy not found for ID: %d", pregnancyID)
-		return 0, fmt.Errorf("pregnancy not found")
-	}
-	
-	if !pregnancy.IsActive {
-		log.Printf("Pregnancy %d is not active", pregnancyID)
-		return 0, fmt.Errorf("pregnancy not active")
-	}
-	
-	log.Printf("Hash validated for pregnancy ID: %d", pregnancyID)
-	return pregnancyID, nil
+
+	return &pregnancy, nil
 }
 
 func GetPregnancyByID(pregnancyID int) (*models.Pregnancy, error) {
 	query := `
-		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, created_at, updated_at
+		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
 		FROM pregnancies 
 		WHERE id = ?
 		LIMIT 1
@@ -496,6 +493,7 @@ func GetPregnancyByID(pregnancyID int) (*models.Pregnancy, error) {
 		&pregnancy.CurrentWeek,
 		&pregnancy.BabyName,
 		&pregnancy.IsActive,
+		&pregnancy.ShareID,
 		&pregnancy.CreatedAt,
 		&pregnancy.UpdatedAt,
 	)

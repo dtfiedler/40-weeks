@@ -288,6 +288,76 @@ func DeleteVillageMemberHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// UpdateVillageMemberHandler updates a village member's status
+func UpdateVillageMemberHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "PUT" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(*middleware.Claims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Extract member ID from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/api/village-members/")
+	memberID, err := strconv.Atoi(path)
+	if err != nil {
+		http.Error(w, "Invalid member ID", http.StatusBadRequest)
+		return
+	}
+
+	var req struct {
+		IsTold bool `json:"is_told"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Get user's pregnancy
+	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "No active pregnancy found", http.StatusNotFound)
+			return
+		}
+		log.Printf("Database error getting pregnancy: %v", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Verify the member belongs to this user's pregnancy
+	member, err := GetVillageMemberByID(memberID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Village member not found", http.StatusNotFound)
+			return
+		}
+		log.Printf("Database error getting village member: %v", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if member.PregnancyID != pregnancy.ID {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
+	// Update the member's status
+	updatedMember, err := UpdateVillageMemberStatus(memberID, req.IsTold)
+	if err != nil {
+		log.Printf("Failed to update village member: %v", err)
+		http.Error(w, "Failed to update village member", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updatedMember)
+}
+
 // Database functions
 
 func CreateVillageMember(pregnancyID int, name, email, relationship string, isTold bool) (*models.VillageMember, error) {
@@ -398,6 +468,36 @@ func GetVillageMemberByID(memberID int) (*models.VillageMember, error) {
 
 	var member models.VillageMember
 	err := db.GetDB().QueryRow(query, memberID).Scan(
+		&member.ID,
+		&member.PregnancyID,
+		&member.Name,
+		&member.Email,
+		&member.Relationship,
+		&member.IsTold,
+		&member.ToldDate,
+		&member.IsSubscribed,
+		&member.UnsubscribeToken,
+		&member.CreatedAt,
+		&member.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &member, nil
+}
+
+func UpdateVillageMemberStatus(memberID int, isTold bool) (*models.VillageMember, error) {
+	query := `
+		UPDATE village_members 
+		SET is_told = ?, updated_at = CURRENT_TIMESTAMP
+		WHERE id = ?
+		RETURNING id, pregnancy_id, name, email, relationship, is_told, told_date, is_subscribed, unsubscribe_token, created_at, updated_at
+	`
+
+	var member models.VillageMember
+	err := db.GetDB().QueryRow(query, isTold, memberID).Scan(
 		&member.ID,
 		&member.PregnancyID,
 		&member.Name,

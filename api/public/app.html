@@ -148,8 +148,9 @@
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
 					</svg>
 				</div>
-				<h3 class="text-lg font-semibold text-gray-900 mb-2">Add to Your Village</h3>
-				<p class="text-gray-600 text-sm">Invite family and friends to follow your journey</p>
+				<h3 class="text-lg font-semibold text-gray-900 mb-2">Your Village</h3>
+				<p class="text-gray-600 text-sm mb-2" id="villageCountText">Loading village...</p>
+				<p class="text-gray-500 text-xs">Manage your followers</p>
 			</div>
 
 			<div class="card p-6 text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="postUpdate()">
@@ -239,6 +240,7 @@
 				if (response.ok) {
 					const data = await response.json();
 					displayPregnancyData(data);
+					loadVillageData(); // Load village data after pregnancy data loads
 				} else if (response.status === 404) {
 					// User doesn't have pregnancy setup, redirect to setup
 					window.location.href = '/pregnancy-setup';
@@ -247,6 +249,77 @@
 				}
 			} catch (err) {
 				showError('Network error loading pregnancy data');
+			}
+		}
+
+		// Load village member count
+		async function loadVillageData() {
+			try {
+				const response = await fetch('/api/village-members', {
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					const members = await response.json();
+					displayVillageCount(members); // Pass the full members array
+				} else {
+					// If 404, no village members yet
+					displayVillageCount([]);
+				}
+			} catch (err) {
+				displayVillageCount([]);
+			}
+		}
+
+		function calculateVillageCount(members) {
+			let totalCount = 0;
+			
+			// Count each member based on relationship type
+			// Parents, friends, and in-laws count as 2 people
+			const doubleCountRelationships = [
+				'parents',        // Parents (both)
+				'in-laws',        // In-laws (both)  
+				'friends',        // Friends
+				'siblings'        // Siblings
+			];
+			
+			// Individual relationships that count as 2 (representing couples)
+			const coupleRelationships = [
+				'mother',         // Mother (represents both parents if father not separately added)
+				'father',         // Father (represents both parents if mother not separately added)
+				'mother-in-law',  // Mother-in-law (represents both in-laws if father-in-law not separately added)
+				'father-in-law',  // Father-in-law (represents both in-laws if mother-in-law not separately added)
+				'friend'          // Friend (could represent a couple)
+			];
+			
+			members.forEach(member => {
+				const relationship = member.relationship;
+				
+				// Check if this relationship should count as 2
+				if (doubleCountRelationships.includes(relationship) || 
+				    coupleRelationships.includes(relationship)) {
+					totalCount += 2;
+				} else {
+					totalCount += 1;
+				}
+			});
+			
+			return totalCount;
+		}
+
+		function displayVillageCount(members) {
+			// Handle case where members might be a number (legacy) or array
+			const count = Array.isArray(members) ? calculateVillageCount(members) : members;
+			const villageCountEl = document.getElementById('villageCountText');
+			
+			if (count === 0) {
+				villageCountEl.textContent = 'No followers yet';
+			} else if (count === 1) {
+				villageCountEl.textContent = '1 person following';
+			} else {
+				villageCountEl.textContent = `${count} people following`;
 			}
 		}
 
@@ -281,8 +354,7 @@
 
 		// Action handlers
 		function addToVillage() {
-			// TODO: Implement village management
-			alert('Village management coming soon!');
+			window.location.href = '/manage/village';
 		}
 
 		function postUpdate() {

@@ -58,6 +58,7 @@ func setupRoutes() {
 	http.HandleFunc("/dashboard", routes.DashboardHandler)
 	http.HandleFunc("/pregnancy-setup", routes.PregnancySetupPageHandler)
 	http.HandleFunc("/village-setup", routes.VillageSetupPageHandler)
+	http.HandleFunc("/manage/village", routes.ManageVillagePageHandler)
 	http.HandleFunc("/admin", routes.AdminPageHandler)
 	http.HandleFunc("/share/", routes.SharePageHandler)
 
@@ -87,9 +88,11 @@ func villageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// villageMemberHandler routes individual village member requests (for delete)
+// villageMemberHandler routes individual village member requests (for update and delete)
 func villageMemberHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case "PUT":
+		handlers.UpdateVillageMemberHandler(w, r)
 	case http.MethodDelete:
 		handlers.DeleteVillageMemberHandler(w, r)
 	default:
