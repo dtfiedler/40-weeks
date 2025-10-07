@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Build Your Village - 40Weeks</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						'sans': ['Poppins', 'system-ui', 'sans-serif'],
+						'serif': ['DM Serif Display', 'serif'],
+					},
+					colors: {
+						primary: {
+							50: '#fffbeb',
+							100: '#fef3c7',
+							200: '#fde68a',
+							300: '#fcd34d',
+							400: '#fbbf24',
+							500: '#f59e0b',
+							600: '#d97706',
+							700: '#b45309',
+							800: '#92400e',
+							900: '#78350f'
+						}
+					}
+				}
+			}
+		}
+	</script>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+	<style>
+		/* Shadcn-inspired custom styles */
+		:root {
+			--background: 0 0% 100%;
+			--foreground: 240 10% 3.9%;
+			--card: 0 0% 100%;
+			--card-foreground: 240 10% 3.9%;
+			--primary: 240 5.9% 10%;
+			--primary-foreground: 0 0% 98%;
+			--secondary: 240 4.8% 95.9%;
+			--secondary-foreground: 240 5.9% 10%;
+			--muted: 240 4.8% 95.9%;
+			--muted-foreground: 240 3.8% 46.1%;
+			--destructive: 0 84.2% 60.2%;
+			--destructive-foreground: 0 0% 98%;
+			--border: 240 5.9% 90%;
+			--input: 240 5.9% 90%;
+			--ring: 240 10% 3.9%;
+			--radius: 0.5rem;
+		}
+		
+		body {
+			font-family: 'Poppins', sans-serif;
+		}
+		
+		.card {
+			background-color: hsl(var(--card));
+			color: hsl(var(--card-foreground));
+			border-radius: var(--radius);
+			border: 1px solid hsl(var(--border));
+			box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+		}
+		
+		.input {
+			background-color: transparent;
+			border: 1px solid hsl(var(--input));
+			border-radius: calc(var(--radius) - 2px);
+		}
+		
+		.input:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			border-color: hsl(var(--ring));
+			box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+		}
+		
+		.btn-primary {
+			background-color: hsl(var(--primary));
+			color: hsl(var(--primary-foreground));
+		}
+		
+		.btn-primary:hover {
+			background-color: hsl(var(--primary) / 0.9);
+		}
+		
+		.btn-primary:focus {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+			box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+		}
+		
+		.btn-secondary {
+			background-color: hsl(var(--secondary));
+			color: hsl(var(--secondary-foreground));
+			border: 1px solid hsl(var(--border));
+		}
+		
+		.btn-secondary:hover {
+			background-color: hsl(var(--secondary) / 0.8);
+		}
+
+		.btn-outline {
+			background-color: transparent;
+			color: hsl(var(--primary));
+			border: 1px solid hsl(var(--primary));
+		}
+
+		.btn-outline:hover {
+			background-color: hsl(var(--primary));
+			color: hsl(var(--primary-foreground));
+		}
+
+		.village-member {
+			transition: all 0.2s ease;
+		}
+
+		.village-member:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.1);
+		}
+	</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+	<!-- Header -->
+	<header class="bg-white border-b border-gray-200">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="flex justify-between items-center h-16">
+				<div class="flex items-center">
+					<h1 class="text-xl font-semibold text-gray-900 font-serif">40Weeks</h1>
+					<span class="ml-2 text-sm text-primary-500 font-medium">BETA</span>
+				</div>
+				<button onclick="logout()" class="text-sm text-gray-500 hover:text-gray-700">
+					Sign out
+				</button>
+			</div>
+		</div>
+	</header>
+
+	<div class="max-w-4xl mx-auto px-4 py-8">
+		<!-- Welcome Header -->
+		<div class="text-center mb-8">
+			<h1 class="text-3xl font-bold text-gray-900 mb-2 font-serif">Build Your Village</h1>
+			<p class="text-lg text-gray-600">
+				Add the people you want to share your pregnancy journey with
+			</p>
+		</div>
+
+		<!-- Add Members Form -->
+		<div class="card p-6 mb-8">
+			<h2 class="text-xl font-semibold text-gray-900 mb-4">Add Village Members</h2>
+			<form id="addMembersForm" class="space-y-6">
+				<div id="memberRows" class="space-y-4">
+					<!-- Member rows will be dynamically generated here -->
+				</div>
+
+				<div class="flex justify-between items-center">
+					<button 
+						type="button"
+						onclick="addMemberRow()"
+						class="btn-outline px-4 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none"
+					>
+						+ Add More
+					</button>
+					<button 
+						type="submit"
+						class="btn-primary px-6 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none"
+					>
+						Add to Village
+					</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- Village Members List -->
+		<div class="card p-6 mb-8">
+			<div class="flex justify-between items-center mb-4">
+				<h2 class="text-xl font-semibold text-gray-900">Your Village</h2>
+				<span class="text-sm bg-primary-100 text-primary-700 px-2 py-1 rounded" id="villageCount">0 members</span>
+			</div>
+			
+			<div id="villageList" class="space-y-3">
+				<div class="text-center py-8 text-gray-500">
+					<svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+					</svg>
+					<p>Your village is empty. Add some people to get started!</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Action Buttons -->
+		<div class="flex flex-col sm:flex-row gap-4 justify-center">
+			<button 
+				onclick="skipForNow()"
+				class="btn-secondary px-8 py-3 rounded-md text-lg font-medium transition-colors focus:outline-none"
+			>
+				Skip for Now
+			</button>
+			<button 
+				onclick="finishSetup()"
+				class="btn-primary px-8 py-3 rounded-md text-lg font-medium transition-colors focus:outline-none"
+			>
+				Finish Setup
+			</button>
+		</div>
+
+		<!-- Info Box -->
+		<div class="mt-8 card p-6">
+			<h3 class="text-lg font-medium text-gray-900 mb-3">About Your Village</h3>
+			<div class="space-y-3 text-sm text-gray-600">
+				<div class="flex items-start">
+					<span class="flex-shrink-0 w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">⚠️</span>
+					<p><strong>Important:</strong> Village members will only receive email updates <em>after</em> you mark them as "in the loop" about your pregnancy!</p>
+				</div>
+				<div class="flex items-start">
+					<span class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">🔒</span>
+					<p>Members can see who else knows about your pregnancy to avoid accidentally sharing news</p>
+				</div>
+				<div class="flex items-start">
+					<span class="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">✉️</span>
+					<p>You can always add more people or update their status later from the main app</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="error" class="hidden fixed top-4 right-4 z-50">
+		<div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm max-w-sm">
+			<span id="error-message"></span>
+		</div>
+	</div>
+
+	<div id="success" class="hidden fixed top-4 right-4 z-50">
+		<div class="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm max-w-sm">
+			<span id="success-message"></span>
+		</div>
+	</div>
+	
+	<script>
+		const token = localStorage.getItem('jwt_token');
+		let villageMembers = [];
+		let memberRowCounter = 0;
+		
+		if (!token) {
+			window.location.href = '/login';
+		}
+
+		// Load existing village members
+		async function loadVillageMembers() {
+			try {
+				const response = await fetch('/api/village-members', {
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					villageMembers = await response.json();
+					renderVillageList();
+				}
+			} catch (err) {
+				console.log('Error loading village members:', err);
+			}
+		}
+
+		// Generate member row HTML
+		function createMemberRow(index) {
+			return `
+				<div class="member-row border border-gray-200 rounded-lg p-4 space-y-3" data-index="${index}">
+					<div class="flex justify-between items-start">
+						<h4 class="text-sm font-medium text-gray-700">Member ${index + 1}</h4>
+						${index >= 3 ? '<button type="button" onclick="removeMemberRow(' + index + ')" class="text-red-500 hover:text-red-700 text-sm">Remove</button>' : ''}
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+							<input 
+								type="text" 
+								name="memberName_${index}" 
+								class="input w-full px-3 py-2 text-sm" 
+								placeholder="Enter name"
+								required
+							>
+						</div>
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+							<input 
+								type="email" 
+								name="memberEmail_${index}" 
+								class="input w-full px-3 py-2 text-sm" 
+								placeholder="Enter email"
+								required
+							>
+						</div>
+					</div>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 mb-1">Relationship *</label>
+							<select name="memberRelationship_${index}" class="input w-full px-3 py-2 text-sm" required>
+								<option value="">Select relationship</option>
+								<option value="mother">Mother</option>
+								<option value="father">Father</option>
+								<option value="mother-in-law">Mother-in-law</option>
+								<option value="father-in-law">Father-in-law</option>
+								<option value="sister">Sister</option>
+								<option value="brother">Brother</option>
+								<option value="friend">Friend</option>
+								<option value="coworker">Coworker</option>
+								<option value="other">Other</option>
+							</select>
+						</div>
+						<div class="flex items-end">
+							<label class="flex items-center space-x-2 text-sm text-gray-700">
+								<input 
+									type="checkbox" 
+									name="knowsAboutPregnancy_${index}" 
+									class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+								>
+								<span>Knows about pregnancy</span>
+							</label>
+						</div>
+					</div>
+				</div>
+			`;
+		}
+
+		// Add member row
+		function addMemberRow() {
+			const memberRows = document.getElementById('memberRows');
+			const newIndex = memberRowCounter++;
+			const newRowHTML = createMemberRow(newIndex);
+			memberRows.insertAdjacentHTML('beforeend', newRowHTML);
+		}
+
+		// Remove member row
+		function removeMemberRow(index) {
+			const row = document.querySelector(`[data-index="${index}"]`);
+			if (row) {
+				row.remove();
+			}
+		}
+
+		// Initialize with 3 empty rows
+		function initializeMemberRows() {
+			const memberRows = document.getElementById('memberRows');
+			memberRows.innerHTML = '';
+			memberRowCounter = 0;
+			for (let i = 0; i < 3; i++) {
+				memberRows.insertAdjacentHTML('beforeend', createMemberRow(i));
+				memberRowCounter++;
+			}
+		}
+
+		// Bulk add members form handler
+		document.getElementById('addMembersForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			
+			const formData = new FormData(e.target);
+			const members = [];
+			
+			// Collect all member data from form
+			for (let i = 0; i < memberRowCounter; i++) {
+				const name = formData.get(`memberName_${i}`);
+				const email = formData.get(`memberEmail_${i}`);
+				const relationship = formData.get(`memberRelationship_${i}`);
+				const isTold = formData.get(`knowsAboutPregnancy_${i}`) === 'on';
+				
+				// Skip empty rows
+				if (!name && !email && !relationship) {
+					continue;
+				}
+				
+				// Validate required fields for non-empty rows
+				if (!name || !email || !relationship) {
+					showError(`Please fill in all required fields for Member ${i + 1}`);
+					return;
+				}
+				
+				const memberData = {
+					name: name.trim(),
+					email: email.trim(),
+					relationship: relationship,
+					is_told: isTold
+				};
+				
+				// Check for duplicate emails within the form
+				if (members.some(member => member.email.toLowerCase() === memberData.email.toLowerCase())) {
+					showError(`Duplicate email found: ${memberData.email}`);
+					return;
+				}
+				
+				// Check for duplicate emails with existing village members
+				if (villageMembers.some(member => member.email.toLowerCase() === memberData.email.toLowerCase())) {
+					showError(`${memberData.email} is already in your village`);
+					return;
+				}
+				
+				members.push(memberData);
+			}
+			
+			if (members.length === 0) {
+				showError('Please add at least one village member');
+				return;
+			}
+			
+			// Add members one by one
+			let successCount = 0;
+			for (const memberData of members) {
+				try {
+					const response = await fetch('/api/village-members', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': 'Bearer ' + token
+						},
+						body: JSON.stringify(memberData)
+					});
+					
+					if (response.ok) {
+						const newMember = await response.json();
+						villageMembers.push(newMember);
+						successCount++;
+					} else {
+						const errorText = await response.text();
+						showError(`Failed to add ${memberData.name}: ${errorText}`);
+						break;
+					}
+				} catch (err) {
+					showError(`Network error adding ${memberData.name}. Please try again.`);
+					break;
+				}
+			}
+			
+			if (successCount > 0) {
+				renderVillageList();
+				initializeMemberRows(); // Reset form
+				showSuccess(`${successCount} member${successCount !== 1 ? 's' : ''} added to your village!`);
+			}
+		});
+
+		function renderVillageList() {
+			const villageList = document.getElementById('villageList');
+			const villageCount = document.getElementById('villageCount');
+			
+			villageCount.textContent = `${villageMembers.length} member${villageMembers.length !== 1 ? 's' : ''}`;
+			
+			if (villageMembers.length === 0) {
+				villageList.innerHTML = `
+					<div class="text-center py-8 text-gray-500">
+						<svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+						</svg>
+						<p>Your village is empty. Add some people to get started!</p>
+					</div>
+				`;
+				return;
+			}
+
+			villageList.innerHTML = villageMembers.map(member => `
+				<div class="village-member flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+					<div class="flex items-center">
+						<div class="w-10 h-10 ${getRelationshipColor(member.relationship)} rounded-full flex items-center justify-center text-white text-sm font-medium mr-3">
+							${member.name.charAt(0).toUpperCase()}
+						</div>
+						<div>
+							<p class="font-medium text-gray-900">${member.name}</p>
+							<p class="text-sm text-gray-500">${member.email} • ${capitalizeFirst(member.relationship)}</p>
+						</div>
+					</div>
+					<div class="flex items-center space-x-2">
+						<span class="text-sm ${member.is_told ? 'text-green-600 bg-green-100' : 'text-gray-500 bg-gray-100'} px-2 py-1 rounded">
+							${member.is_told ? '✓ Knows' : 'Not told'}
+						</span>
+						<button onclick="removeMember(${member.id})" class="text-red-500 hover:text-red-700 p-1">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+							</svg>
+						</button>
+					</div>
+				</div>
+			`).join('');
+		}
+
+		function getRelationshipColor(relationship) {
+			const colors = {
+				'mother': 'bg-pink-500',
+				'father': 'bg-blue-500',
+				'mother-in-law': 'bg-purple-500',
+				'father-in-law': 'bg-indigo-500',
+				'sister': 'bg-rose-500',
+				'brother': 'bg-cyan-500',
+				'friend': 'bg-green-500',
+				'coworker': 'bg-orange-500',
+				'other': 'bg-gray-500'
+			};
+			return colors[relationship] || 'bg-gray-500';
+		}
+
+		function capitalizeFirst(str) {
+			return str.charAt(0).toUpperCase() + str.slice(1).replace('-', ' ');
+		}
+
+		async function removeMember(memberId) {
+			if (!confirm('Are you sure you want to remove this person from your village?')) {
+				return;
+			}
+
+			try {
+				const response = await fetch(`/api/village-members/${memberId}`, {
+					method: 'DELETE',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					villageMembers = villageMembers.filter(member => member.id !== memberId);
+					renderVillageList();
+					showSuccess('Member removed from village');
+				} else {
+					showError('Failed to remove member');
+				}
+			} catch (err) {
+				showError('Network error. Please try again.');
+			}
+		}
+
+		function skipForNow() {
+			window.location.href = '/app';
+		}
+
+		function finishSetup() {
+			window.location.href = '/app';
+		}
+
+		function showError(message) {
+			const errorDiv = document.getElementById('error');
+			const errorMessage = document.getElementById('error-message');
+			errorMessage.textContent = message;
+			errorDiv.classList.remove('hidden');
+			setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+		}
+
+		function showSuccess(message) {
+			const successDiv = document.getElementById('success');
+			const successMessage = document.getElementById('success-message');
+			successMessage.textContent = message;
+			successDiv.classList.remove('hidden');
+			setTimeout(() => successDiv.classList.add('hidden'), 3000);
+		}
+
+		function logout() {
+			localStorage.removeItem('jwt_token');
+			window.location.href = '/login';
+		}
+
+		// Load existing members on page load
+		loadVillageMembers();
+		
+		// Initialize member rows
+		initializeMemberRows();
+	</script>
+</body>
+</html>
