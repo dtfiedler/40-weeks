@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -12,10 +13,10 @@ import (
 )
 
 type CreatePregnancyRequest struct {
-	DueDate        string  `json:"due_date"`
-	PartnerName    *string `json:"partner_name"`
-	BabyName       *string `json:"baby_name"`
-	ConceptionDate *string `json:"conception_date"`
+	DueDate      string  `json:"due_date"`
+	PartnerName  *string `json:"partner_name"`
+	PartnerEmail *string `json:"partner_email"`
+	BabyName     *string `json:"baby_name"`
 }
 
 type PregnancyResponse struct {
@@ -50,17 +51,6 @@ func CreatePregnancyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse conception date if provided
-	var conceptionDate *time.Time
-	if req.ConceptionDate != nil && *req.ConceptionDate != "" {
-		cd, err := time.Parse("2006-01-02", *req.ConceptionDate)
-		if err != nil {
-			http.Error(w, "Invalid conception date format", http.StatusBadRequest)
-			return
-		}
-		conceptionDate = &cd
-	}
-
 	// Check if user already has an active pregnancy
 	existingPregnancy, err := GetActivePregnancyByUserID(claims.UserID)
 	if err != nil && err != sql.ErrNoRows {
@@ -74,7 +64,7 @@ func CreatePregnancyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create the pregnancy
-	pregnancy, err := CreatePregnancy(claims.UserID, dueDate, conceptionDate, req.PartnerName, req.BabyName)
+	pregnancy, err := CreatePregnancy(claims.UserID, dueDate, req.PartnerName, req.PartnerEmail, req.BabyName)
 	if err != nil {
 		http.Error(w, "Failed to create pregnancy", http.StatusInternalServerError)
 		return
@@ -92,6 +82,8 @@ func CreatePregnancyHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetPregnancyHandler returns the current user's active pregnancy
 func GetPregnancyHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("GetPregnancyHandler called with method: %s, path: %s", r.Method, r.URL.Path)
+	
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -99,16 +91,20 @@ func GetPregnancyHandler(w http.ResponseWriter, r *http.Request) {
 
 	claims, ok := r.Context().Value(middleware.ClaimsKey).(*middleware.Claims)
 	if !ok {
+		log.Printf("No claims found in context")
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
+	log.Printf("Looking for pregnancy for user ID: %d", claims.UserID)
 	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			log.Printf("No pregnancy found for user ID: %d", claims.UserID)
 			http.Error(w, "No active pregnancy found", http.StatusNotFound)
 			return
 		}
+		log.Printf("Database error looking for pregnancy: %v", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
 	}
@@ -124,18 +120,25 @@ func GetPregnancyHandler(w http.ResponseWriter, r *http.Request) {
 
 // Database functions
 
-func CreatePregnancy(userID int, dueDate time.Time, conceptionDate *time.Time, partnerName, babyName *string) (*models.Pregnancy, error) {
+func CreatePregnancy(userID int, dueDate time.Time, partnerName, partnerEmail, babyName *string) (*models.Pregnancy, error) {
+	// Set default baby name if empty
+	if babyName == nil || *babyName == "" {
+		defaultName := "Baby"
+		babyName = &defaultName
+	}
+
 	query := `
-		INSERT INTO pregnancies (user_id, due_date, conception_date, partner_name, baby_name)
+		INSERT INTO pregnancies (user_id, due_date, partner_name, partner_email, baby_name)
 		VALUES (?, ?, ?, ?, ?)
-		RETURNING id, user_id, partner_name, due_date, conception_date, current_week, baby_name, is_active, created_at, updated_at
+		RETURNING id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, created_at, updated_at
 	`
 
 	var pregnancy models.Pregnancy
-	err := db.GetDB().QueryRow(query, userID, dueDate, conceptionDate, partnerName, babyName).Scan(
+	err := db.GetDB().QueryRow(query, userID, dueDate, partnerName, partnerEmail, babyName).Scan(
 		&pregnancy.ID,
 		&pregnancy.UserID,
 		&pregnancy.PartnerName,
+		&pregnancy.PartnerEmail,
 		&pregnancy.DueDate,
 		&pregnancy.ConceptionDate,
 		&pregnancy.CurrentWeek,
@@ -160,7 +163,7 @@ func CreatePregnancy(userID int, dueDate time.Time, conceptionDate *time.Time, p
 
 func GetActivePregnancyByUserID(userID int) (*models.Pregnancy, error) {
 	query := `
-		SELECT id, user_id, partner_name, due_date, conception_date, current_week, baby_name, is_active, created_at, updated_at
+		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, created_at, updated_at
 		FROM pregnancies 
 		WHERE user_id = ? AND is_active = TRUE
 		ORDER BY created_at DESC
@@ -172,6 +175,7 @@ func GetActivePregnancyByUserID(userID int) (*models.Pregnancy, error) {
 		&pregnancy.ID,
 		&pregnancy.UserID,
 		&pregnancy.PartnerName,
+		&pregnancy.PartnerEmail,
 		&pregnancy.DueDate,
 		&pregnancy.ConceptionDate,
 		&pregnancy.CurrentWeek,

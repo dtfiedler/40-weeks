@@ -29,7 +29,7 @@ const (
 	MilestoneInductionScheduled = "induction_scheduled"
 	MilestoneAnnouncementMade = "announcement_made"
 	MilestoneGenderRevealed   = "gender_revealed"
-	MilestoneNurserycomplete  = "nursery_complete"
+	MilestoneNurseryComplete  = "nursery_complete"
 	MilestoneHospitalBagPacked = "hospital_bag_packed"
 	MilestoneMaternityLeave   = "maternity_leave"
 	MilestonePaternityLeave   = "paternity_leave"
@@ -55,7 +55,7 @@ func (m *Milestone) GetDisplayTitle() string {
 		return "Pregnancy Announcement"
 	case MilestoneGenderRevealed:
 		return "Gender Reveal"
-	case MilestoneNurserycomplete:
+	case MilestoneNurseryComplete:
 		return "Nursery Complete"
 	case MilestoneHospitalBagPacked:
 		return "Hospital Bag Packed"

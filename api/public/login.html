@@ -227,7 +227,26 @@
 				if (response.ok) {
 					const data = await response.json();
 					localStorage.setItem('jwt_token', data.token);
-					window.location.href = '/dashboard';
+					
+					// Check if user has pregnancy setup
+					try {
+						const pregnancyResponse = await fetch('/api/pregnancy/current', {
+							headers: {
+								'Authorization': 'Bearer ' + data.token
+							}
+						});
+						
+						if (pregnancyResponse.ok) {
+							// User has pregnancy setup, go to app
+							window.location.href = '/app';
+						} else {
+							// User needs to set up pregnancy
+							window.location.href = '/pregnancy-setup';
+						}
+					} catch (err) {
+						// Fallback to pregnancy setup
+						window.location.href = '/pregnancy-setup';
+					}
 				} else {
 					errorDiv.classList.remove('hidden');
 					errorMessage.textContent = 'Invalid email or password';

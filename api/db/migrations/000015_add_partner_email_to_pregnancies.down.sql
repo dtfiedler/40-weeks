@@ -1,0 +1,1 @@
+ALTER TABLE pregnancies DROP COLUMN partner_email;

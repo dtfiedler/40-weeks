@@ -25,7 +25,7 @@ func main() {
 	port := ":" + config.AppConfig.ServerPort
 	fmt.Printf("Server starting on port %s\n", port)
 	fmt.Println("Public routes: /health, /login, /register, /api/login, /api/register")
-	fmt.Println("Protected routes: /api/users, /api/profile, /dashboard, /admin")
+	fmt.Println("Protected routes: /api/users, /api/profile, /api/pregnancy, /api/pregnancy/current, /app, /dashboard, /pregnancy-setup, /village-setup, /admin")
 	fmt.Println("Static files: /static/*")
 	fmt.Println("Demo credentials: admin/password")
 
@@ -46,10 +46,15 @@ func setupRoutes() {
 	// Protected routes (with auth middleware)
 	http.HandleFunc("/api/users", middleware.AuthMiddleware(routes.UsersHandler))
 	http.HandleFunc("/api/profile", middleware.AuthMiddleware(routes.ProfileHandler))
-	http.HandleFunc("/api/pregnancy", middleware.AuthMiddleware(handlers.CreatePregnancyHandler))
 	http.HandleFunc("/api/pregnancy/current", middleware.AuthMiddleware(handlers.GetPregnancyHandler))
+	http.HandleFunc("/api/pregnancy", middleware.AuthMiddleware(handlers.CreatePregnancyHandler))
+	http.HandleFunc("/api/village-members", middleware.AuthMiddleware(villageHandler))
+	http.HandleFunc("/api/village-members/bulk", middleware.AuthMiddleware(handlers.CreateVillageMembersBulkHandler))
+	http.HandleFunc("/api/village-members/", middleware.AuthMiddleware(villageMemberHandler))
+	http.HandleFunc("/app", routes.AppPageHandler)
 	http.HandleFunc("/dashboard", routes.DashboardHandler)
 	http.HandleFunc("/pregnancy-setup", routes.PregnancySetupPageHandler)
+	http.HandleFunc("/village-setup", routes.VillageSetupPageHandler)
 	http.HandleFunc("/admin", routes.AdminPageHandler)
 
 	// Serve static files from public directory
@@ -64,4 +69,26 @@ func setupRoutes() {
 		}
 		http.ServeFile(w, r, "public/index.html")
 	})
+}
+
+// villageHandler routes village member requests
+func villageHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		handlers.GetVillageMembersHandler(w, r)
+	case http.MethodPost:
+		handlers.CreateVillageMemberHandler(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// villageMemberHandler routes individual village member requests (for delete)
+func villageMemberHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodDelete:
+		handlers.DeleteVillageMemberHandler(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }

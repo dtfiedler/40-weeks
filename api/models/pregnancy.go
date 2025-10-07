@@ -8,6 +8,7 @@ type Pregnancy struct {
 	ID             int       `json:"id" db:"id"`
 	UserID         int       `json:"user_id" db:"user_id"`
 	PartnerName    *string   `json:"partner_name" db:"partner_name"`
+	PartnerEmail   *string   `json:"partner_email" db:"partner_email"`
 	DueDate        time.Time `json:"due_date" db:"due_date"`
 	ConceptionDate *time.Time `json:"conception_date" db:"conception_date"`
 	CurrentWeek    int       `json:"current_week" db:"current_week"`

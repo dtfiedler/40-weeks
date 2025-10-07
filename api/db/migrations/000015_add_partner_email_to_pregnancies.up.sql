@@ -1,0 +1,1 @@
+ALTER TABLE pregnancies ADD COLUMN partner_email TEXT;

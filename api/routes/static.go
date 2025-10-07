@@ -25,3 +25,11 @@ func LegalPageHandler(w http.ResponseWriter, r *http.Request) {
 func AdminPageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "public/admin.html")
 }
+
+func AppPageHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "public/app.html")
+}
+
+func VillageSetupPageHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "public/village-setup.html")
+}

@@ -162,6 +162,23 @@
 						>
 					</div>
 
+					<!-- Partner Email (Optional) -->
+					<div class="md:col-span-2">
+						<label for="partnerEmail" class="block text-sm font-medium text-gray-700 mb-2">
+							Partner's Email (optional)
+						</label>
+						<input 
+							type="email" 
+							id="partnerEmail" 
+							name="partnerEmail" 
+							class="input w-full px-3 py-2 text-sm transition-colors"
+							placeholder="partner@example.com"
+						>
+						<p class="text-xs text-gray-500 mt-1">
+							Your partner can receive updates about your pregnancy journey
+						</p>
+					</div>
+
 					<!-- Baby Name (Optional) -->
 					<div class="md:col-span-2">
 						<label for="babyName" class="block text-sm font-medium text-gray-700 mb-2">
@@ -179,21 +196,6 @@
 						</p>
 					</div>
 
-					<!-- Conception Date (Optional) -->
-					<div class="md:col-span-2">
-						<label for="conceptionDate" class="block text-sm font-medium text-gray-700 mb-2">
-							Conception Date (optional)
-						</label>
-						<input 
-							type="date" 
-							id="conceptionDate" 
-							name="conceptionDate" 
-							class="input w-full px-3 py-2 text-sm transition-colors"
-						>
-						<p class="text-xs text-gray-500 mt-1">
-							If you know it, this helps us calculate your exact week more accurately
-						</p>
-					</div>
 				</div>
 
 				<!-- Current Week Display -->
@@ -258,18 +260,36 @@
 			window.location.href = '/login';
 		}
 		
+		// Check if user already has a pregnancy setup
+		async function checkExistingPregnancy() {
+			try {
+				const response = await fetch('/api/pregnancy/current', {
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					// User already has pregnancy setup, redirect to app
+					window.location.href = '/app';
+					return;
+				}
+			} catch (err) {
+				// Error checking pregnancy, continue with setup
+				console.log('Error checking existing pregnancy:', err);
+			}
+		}
+		
+		// Check for existing pregnancy on page load
+		checkExistingPregnancy();
+		
 		// Calculate and display current week when due date changes
 		document.getElementById('dueDate').addEventListener('change', function() {
 			calculateCurrentWeek();
 		});
 		
-		document.getElementById('conceptionDate').addEventListener('change', function() {
-			calculateCurrentWeek();
-		});
-		
 		function calculateCurrentWeek() {
 			const dueDate = document.getElementById('dueDate').value;
-			const conceptionDate = document.getElementById('conceptionDate').value;
 			
 			if (!dueDate) {
 				document.getElementById('weekDisplay').classList.add('hidden');
@@ -277,15 +297,9 @@
 			}
 			
 			const now = new Date();
-			let startDate;
-			
-			if (conceptionDate) {
-				startDate = new Date(conceptionDate);
-			} else {
-				// Calculate conception from due date (40 weeks back)
-				startDate = new Date(dueDate);
-				startDate.setDate(startDate.getDate() - 280); // 40 weeks = 280 days
-			}
+			// Calculate conception from due date (40 weeks back)
+			const startDate = new Date(dueDate);
+			startDate.setDate(startDate.getDate() - 280); // 40 weeks = 280 days
 			
 			const diffTime = now - startDate;
 			const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -306,8 +320,8 @@
 			const data = {
 				due_date: formData.get('dueDate'),
 				partner_name: formData.get('partnerName') || null,
-				baby_name: formData.get('babyName') || null,
-				conception_date: formData.get('conceptionDate') || null
+				partner_email: formData.get('partnerEmail') || null,
+				baby_name: formData.get('babyName') || null
 			};
 			
 			const errorDiv = document.getElementById('error');
@@ -348,9 +362,6 @@
 		// Set minimum due date to today
 		const today = new Date().toISOString().split('T')[0];
 		document.getElementById('dueDate').setAttribute('min', today);
-		
-		// Set maximum conception date to today
-		document.getElementById('conceptionDate').setAttribute('max', today);
 	</script>
 </body>
 </html>
