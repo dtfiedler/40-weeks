@@ -509,7 +509,7 @@ func GetPregnancyByID(pregnancyID int) (*models.Pregnancy, error) {
 
 func GetUserByID(userID int) (*db.User, error) {
 	query := `
-		SELECT id, name, email, password, is_admin, created_at
+		SELECT id, name, email, password, is_admin, created
 		FROM users 
 		WHERE id = ?
 		LIMIT 1

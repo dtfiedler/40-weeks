@@ -160,7 +160,7 @@
 
 			<!-- Join Form -->
 			<div class="card p-6 mb-8">
-				<h2 class="text-xl font-semibold text-gray-900 mb-4">Add Yourself to the Village</h2>
+				<h2 class="text-xl font-semibold text-gray-900 mb-4">Join their village</h2>
 				<form id="memberJoinForm" class="space-y-4">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div>
@@ -185,7 +185,7 @@
 							<p class="text-xs text-gray-500 mt-1">For couples, separate emails with commas</p>
 						</div>
 					</div>
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="grid grid-cols-1 gap-4">
 						<div>
 							<label class="block text-sm font-medium text-gray-700 mb-1">Relationship *</label>
 							<select name="memberRelationship" class="input w-full px-3 py-2 text-sm" required>
@@ -205,18 +205,17 @@
 								<option value="other">Other</option>
 							</select>
 						</div>
-						<div class="flex items-end">
-							<label class="flex items-center space-x-2 text-sm text-gray-700">
-								<input 
-									type="checkbox" 
-									name="knowsAboutPregnancy" 
-									class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-									checked
-								>
-								<span>I know about the pregnancy</span>
-							</label>
-						</div>
 					</div>
+					
+					<!-- Terms of Service Note -->
+					<div class="bg-gray-50 border border-gray-200 rounded-md p-4">
+						<p class="text-xs text-gray-600">
+							By joining this village, you agree to receive email updates about this pregnancy journey. 
+							Your email will only be used for pregnancy-related updates and will not be shared with third parties. 
+							You can unsubscribe at any time.
+						</p>
+					</div>
+
 					<div class="flex justify-end pt-4">
 						<button 
 							type="submit"
@@ -355,7 +354,7 @@
 				name: formData.get('memberName').trim(),
 				emails: formData.get('memberEmail').trim(),
 				relationship: formData.get('memberRelationship'),
-				is_told: formData.get('knowsAboutPregnancy') === 'on'
+				is_told: true // Always true since they're joining via invite link
 			};
 
 			// Validate required fields
