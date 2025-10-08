@@ -281,12 +281,15 @@
 				
 				if (response.ok) {
 					const members = await response.json();
-					displayVillageCount(members); // Pass the full members array
+					// Ensure members is always an array, handle null/undefined
+					const safeMembers = Array.isArray(members) ? members : [];
+					displayVillageCount(safeMembers);
 				} else {
 					// If 404, no village members yet
 					displayVillageCount([]);
 				}
 			} catch (err) {
+				console.error('Error loading village data:', err);
 				displayVillageCount([]);
 			}
 		}
@@ -328,12 +331,21 @@
 		}
 
 		function displayVillageCount(members) {
-			// Handle case where members might be a number (legacy) or array
-			const count = Array.isArray(members) ? calculateVillageCount(members) : members;
+			// Handle case where members might be a number (legacy), array, null, or undefined
+			let count = 0;
+			if (Array.isArray(members)) {
+				count = calculateVillageCount(members);
+			} else if (typeof members === 'number') {
+				count = members;
+			} else {
+				// Handle null, undefined, or other types
+				count = 0;
+			}
+
 			const villageCountEl = document.getElementById('villageCountText');
 			
 			if (count === 0) {
-				villageCountEl.textContent = 'No followers yet';
+				villageCountEl.textContent = 'Build your village!';
 			} else if (count === 1) {
 				villageCountEl.textContent = '1 person following';
 			} else {

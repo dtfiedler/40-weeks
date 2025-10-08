@@ -315,11 +315,12 @@
 				
 				if (response.ok) {
 					const data = await response.json();
-					populateForm(data.pregnancy);
-					updatePregnancyOverview(data.pregnancy, data.current_week);
+					console.log('API response data:', data);
+					populateForm(data);
+					updatePregnancyOverview(data, data.current_week_calculated);
 					
 					// Store original data for cancel functionality
-					originalData = { ...data.pregnancy };
+					originalData = { ...data };
 				} else if (response.status === 404) {
 					// No pregnancy found, redirect to setup
 					window.location.href = '/pregnancy-setup';
@@ -327,11 +328,20 @@
 					showError('Failed to load pregnancy data');
 				}
 			} catch (err) {
+				console.error('Error loading pregnancy data:', err);
 				showError('Network error loading pregnancy data');
 			}
 		}
 
 		function populateForm(pregnancy) {
+			console.log('Populating form with data:', pregnancy);
+			
+			if (!pregnancy || !pregnancy.due_date) {
+				console.error('Invalid pregnancy data:', pregnancy);
+				showError('Invalid pregnancy data received');
+				return;
+			}
+			
 			document.getElementById('dueDate').value = pregnancy.due_date.split('T')[0];
 			document.getElementById('babyName').value = pregnancy.baby_name || '';
 			document.getElementById('partnerName').value = pregnancy.partner_name || '';

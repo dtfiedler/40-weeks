@@ -223,6 +223,11 @@ func GetVillageMembersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Ensure we return an empty array instead of null when no members exist
+	if members == nil {
+		members = []*models.VillageMember{}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(members)
 }
