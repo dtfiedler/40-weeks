@@ -139,6 +139,61 @@ func GetPregnancyHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// UpdatePregnancyHandler updates an existing pregnancy
+func UpdatePregnancyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "PUT" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get user from context (set by auth middleware)
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(*middleware.Claims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req CreatePregnancyRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Parse due date
+	dueDate, err := time.Parse("2006-01-02", req.DueDate)
+	if err != nil {
+		http.Error(w, "Invalid due date format", http.StatusBadRequest)
+		return
+	}
+
+	// Get the user's active pregnancy
+	existingPregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "No active pregnancy found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Update the pregnancy
+	pregnancy, err := UpdatePregnancy(existingPregnancy.ID, dueDate, req.PartnerName, req.PartnerEmail, req.BabyName)
+	if err != nil {
+		http.Error(w, "Failed to update pregnancy", http.StatusInternalServerError)
+		return
+	}
+
+	// Return the updated pregnancy with calculated week
+	response := &PregnancyResponse{
+		Pregnancy:   pregnancy,
+		CurrentWeek: pregnancy.GetCurrentWeek(),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 // GetInviteHashHandler returns the invite hash for the user's pregnancy
 func GetInviteHashHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -294,7 +349,7 @@ func JoinVillageFromInviteHandler(w http.ResponseWriter, r *http.Request) {
 			memberName = fmt.Sprintf("%s (%d)", req.Name, i+1)
 		}
 
-		member, err := CreateVillageMember(pregnancyID, memberName, email, req.Relationship, req.IsTold)
+		member, err := CreateVillageMemberWithEvent(pregnancyID, memberName, email, req.Relationship, req.IsTold, true)
 		if err != nil {
 			log.Printf("Failed to create village member: %v", err)
 			http.Error(w, "Failed to create village member", http.StatusInternalServerError)
@@ -367,6 +422,50 @@ func CreatePregnancy(userID int, dueDate time.Time, partnerName, partnerEmail, b
 	if err := CreateDefaultMilestones(pregnancy.ID, dueDate); err != nil {
 		// Log error but don't fail the pregnancy creation
 		// TODO: Add proper logging
+	}
+
+	// Create pregnancy announced event
+	weekNumber := pregnancy.GetCurrentWeek()
+	if err := CreatePregnancyAnnouncedEvent(pregnancy.ID, userID, &weekNumber); err != nil {
+		// Log error but don't fail the pregnancy creation
+		log.Printf("Failed to create pregnancy announced event: %v", err)
+	}
+
+	return &pregnancy, nil
+}
+
+func UpdatePregnancy(pregnancyID int, dueDate time.Time, partnerName, partnerEmail, babyName *string) (*models.Pregnancy, error) {
+	// Set default baby name if empty
+	if babyName == nil || *babyName == "" {
+		defaultName := "Baby"
+		babyName = &defaultName
+	}
+
+	query := `
+		UPDATE pregnancies 
+		SET due_date = ?, partner_name = ?, partner_email = ?, baby_name = ?, updated_at = CURRENT_TIMESTAMP
+		WHERE id = ?
+		RETURNING id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
+	`
+
+	var pregnancy models.Pregnancy
+	err := db.GetDB().QueryRow(query, dueDate, partnerName, partnerEmail, babyName, pregnancyID).Scan(
+		&pregnancy.ID,
+		&pregnancy.UserID,
+		&pregnancy.PartnerName,
+		&pregnancy.PartnerEmail,
+		&pregnancy.DueDate,
+		&pregnancy.ConceptionDate,
+		&pregnancy.CurrentWeek,
+		&pregnancy.BabyName,
+		&pregnancy.IsActive,
+		&pregnancy.ShareID,
+		&pregnancy.CreatedAt,
+		&pregnancy.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
 	}
 
 	return &pregnancy, nil

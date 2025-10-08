@@ -88,8 +88,8 @@ func CreateVillageMemberHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create the village member
-	member, err := CreateVillageMember(pregnancy.ID, req.Name, req.Email, req.Relationship, req.IsTold)
+	// Create the village member with event
+	member, err := CreateVillageMemberWithEvent(pregnancy.ID, req.Name, req.Email, req.Relationship, req.IsTold, false)
 	if err != nil {
 		log.Printf("Failed to create village member: %v", err)
 		http.Error(w, "Failed to create village member", http.StatusInternalServerError)
@@ -174,7 +174,7 @@ func CreateVillageMembersBulkHandler(w http.ResponseWriter, r *http.Request) {
 			memberName = fmt.Sprintf("%s (%d)", req.Name, i+1)
 		}
 
-		member, err := CreateVillageMember(pregnancy.ID, memberName, email, req.Relationship, req.IsTold)
+		member, err := CreateVillageMemberWithEvent(pregnancy.ID, memberName, email, req.Relationship, req.IsTold, false)
 		if err != nil {
 			log.Printf("Failed to create village member: %v", err)
 			http.Error(w, "Failed to create village member", http.StatusInternalServerError)
@@ -347,7 +347,7 @@ func UpdateVillageMemberHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update the member's status
-	updatedMember, err := UpdateVillageMemberStatus(memberID, req.IsTold)
+	updatedMember, err := UpdateVillageMemberStatusWithEvent(memberID, req.IsTold, claims.UserID)
 	if err != nil {
 		log.Printf("Failed to update village member: %v", err)
 		http.Error(w, "Failed to update village member", http.StatusInternalServerError)
@@ -387,6 +387,38 @@ func CreateVillageMember(pregnancyID int, name, email, relationship string, isTo
 	}
 
 	return &member, nil
+}
+
+// CreateVillageMemberWithEvent creates a village member and corresponding event
+func CreateVillageMemberWithEvent(pregnancyID int, name, email, relationship string, isTold bool, isFromInvite bool) (*models.VillageMember, error) {
+	// Create the village member first
+	member, err := CreateVillageMember(pregnancyID, name, email, relationship, isTold)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get current week for the pregnancy
+	pregnancy, err := GetPregnancyByID(pregnancyID)
+	if err != nil {
+		log.Printf("Could not get pregnancy for event creation: %v", err)
+		return member, nil // Don't fail member creation if event fails
+	}
+
+	weekNumber := pregnancy.GetCurrentWeek()
+
+	// Create appropriate event based on how they joined
+	if isFromInvite {
+		if err := CreateVillagerJoinedEvent(pregnancyID, name, relationship, &weekNumber); err != nil {
+			log.Printf("Failed to create villager joined event: %v", err)
+		}
+	} else {
+		// For manually added villagers, create a "villager added" event
+		if err := CreateVillagerAddedEvent(pregnancyID, name, relationship, &weekNumber); err != nil {
+			log.Printf("Failed to create villager added event: %v", err)
+		}
+	}
+
+	return member, nil
 }
 
 func GetVillageMembersByPregnancyID(pregnancyID int) ([]*models.VillageMember, error) {
@@ -516,6 +548,38 @@ func UpdateVillageMemberStatus(memberID int, isTold bool) (*models.VillageMember
 	}
 
 	return &member, nil
+}
+
+// UpdateVillageMemberStatusWithEvent updates villager status and creates event
+func UpdateVillageMemberStatusWithEvent(memberID int, isTold bool, userID int) (*models.VillageMember, error) {
+	// Get the member before updating to check if status actually changed
+	originalMember, err := GetVillageMemberByID(memberID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update the member status
+	member, err := UpdateVillageMemberStatus(memberID, isTold)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create event only if status changed from false to true (newly told)
+	if !originalMember.IsTold && isTold {
+		// Get current week for the pregnancy
+		pregnancy, err := GetPregnancyByID(member.PregnancyID)
+		if err != nil {
+			log.Printf("Could not get pregnancy for event creation: %v", err)
+			return member, nil // Don't fail update if event fails
+		}
+
+		weekNumber := pregnancy.GetCurrentWeek()
+		if err := CreateVillagerToldEvent(member.PregnancyID, member.Name, userID, &weekNumber); err != nil {
+			log.Printf("Failed to create villager told event: %v", err)
+		}
+	}
+
+	return member, nil
 }
 
 func DeleteVillageMember(memberID int) error {

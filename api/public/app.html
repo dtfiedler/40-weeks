@@ -199,7 +199,7 @@
 						</div>
 					</div>
 					<div class="mt-6">
-						<button class="btn-secondary">Edit Details</button>
+						<button onclick="editPregnancyDetails()" class="btn-secondary">Edit Details</button>
 					</div>
 				</div>
 			</div>
@@ -215,6 +215,24 @@
 					</div>
 					<div class="mt-4">
 						<button class="btn-secondary w-full" onclick="viewMilestones()">View All Milestones</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Pregnancy Timeline -->
+		<div class="mt-8">
+			<div class="card p-6">
+				<div class="flex items-center justify-between mb-6">
+					<h2 class="text-xl font-semibold text-gray-900 font-serif">Your Pregnancy Timeline</h2>
+					<button id="loadMoreEvents" class="btn-secondary text-sm" style="display: none;">
+						Load More
+					</button>
+				</div>
+				
+				<div id="timelineContainer" class="space-y-4">
+					<div class="text-center py-8">
+						<div class="text-gray-500">Loading your pregnancy journey...</div>
 					</div>
 				</div>
 			</div>
@@ -367,13 +385,164 @@
 			alert('Milestone tracking coming soon!');
 		}
 
+		function editPregnancyDetails() {
+			window.location.href = '/manage/pregnancy';
+		}
+
 		function logout() {
 			localStorage.removeItem('jwt_token');
 			window.location.href = '/login';
 		}
 
+		// Timeline functionality
+		let timelineOffset = 0;
+		const timelineLimit = 10;
+
+		// Load timeline events
+		async function loadTimelineEvents(offset = 0, append = false) {
+			try {
+				const response = await fetch(`/api/timeline?limit=${timelineLimit}&offset=${offset}`, {
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					const data = await response.json();
+					displayTimelineEvents(data.events, append);
+					
+					// Show/hide load more button
+					const loadMoreBtn = document.getElementById('loadMoreEvents');
+					if (data.events.length === timelineLimit) {
+						loadMoreBtn.style.display = 'block';
+						timelineOffset = offset + timelineLimit;
+					} else {
+						loadMoreBtn.style.display = 'none';
+					}
+				} else {
+					displayTimelineEvents([], append);
+				}
+			} catch (err) {
+				console.error('Failed to load timeline events:', err);
+				displayTimelineEvents([], append);
+			}
+		}
+
+		// Display timeline events
+		function displayTimelineEvents(events, append = false) {
+			const container = document.getElementById('timelineContainer');
+			
+			if (!append) {
+				container.innerHTML = '';
+			}
+
+			if (events.length === 0 && !append) {
+				container.innerHTML = `
+					<div class="text-center py-8">
+						<div class="text-gray-500">Your pregnancy journey will appear here as you reach milestones and your village grows!</div>
+					</div>
+				`;
+				return;
+			}
+
+			events.forEach(event => {
+				const eventElement = createTimelineEventElement(event);
+				container.appendChild(eventElement);
+			});
+		}
+
+		// Create timeline event element
+		function createTimelineEventElement(event) {
+			const div = document.createElement('div');
+			div.className = 'flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors';
+			
+			const icon = getEventIcon(event.event_type);
+			const color = getEventColor(event.event_type);
+			const timeAgo = getTimeAgo(event.created_at);
+			
+			div.innerHTML = `
+				<div class="flex-shrink-0">
+					<div class="w-10 h-10 ${color} bg-opacity-10 rounded-full flex items-center justify-center">
+						<span class="text-lg">${icon}</span>
+					</div>
+				</div>
+				<div class="flex-1 min-w-0">
+					<div class="flex items-center justify-between">
+						<h3 class="text-sm font-medium text-gray-900">${event.event_title}</h3>
+						<div class="flex items-center space-x-2 text-xs text-gray-500">
+							${event.week_number ? `<span class="bg-gray-100 px-2 py-1 rounded">Week ${event.week_number}</span>` : ''}
+							<span>${timeAgo}</span>
+						</div>
+					</div>
+					${event.event_description ? `<p class="text-sm text-gray-600 mt-1">${event.event_description}</p>` : ''}
+				</div>
+			`;
+			
+			return div;
+		}
+
+		// Get event icon based on type
+		function getEventIcon(eventType) {
+			const icons = {
+				'pregnancy_announced': '🎉',
+				'villager_joined': '👥',
+				'villager_told': '💌',
+				'milestone_reached': '🏆',
+				'appointment_completed': '🏥',
+				'update_posted': '📝',
+				'week_progression': '📅'
+			};
+			return icons[eventType] || '📌';
+		}
+
+		// Get event color based on type
+		function getEventColor(eventType) {
+			const colors = {
+				'pregnancy_announced': 'text-pink-600',
+				'villager_joined': 'text-blue-600',
+				'villager_told': 'text-purple-600',
+				'milestone_reached': 'text-yellow-600',
+				'appointment_completed': 'text-green-600',
+				'update_posted': 'text-indigo-600',
+				'week_progression': 'text-gray-600'
+			};
+			return colors[eventType] || 'text-gray-500';
+		}
+
+		// Get time ago string
+		function getTimeAgo(dateString) {
+			const date = new Date(dateString);
+			const now = new Date();
+			const diffTime = Math.abs(now - date);
+			const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+			
+			if (diffDays === 0) {
+				const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+				if (diffHours === 0) {
+					const diffMinutes = Math.floor(diffTime / (1000 * 60));
+					return diffMinutes <= 1 ? 'Just now' : `${diffMinutes} minutes ago`;
+				}
+				return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+			} else if (diffDays === 1) {
+				return 'Yesterday';
+			} else if (diffDays < 7) {
+				return `${diffDays} days ago`;
+			} else if (diffDays < 30) {
+				const weeks = Math.floor(diffDays / 7);
+				return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+			} else {
+				return date.toLocaleDateString();
+			}
+		}
+
+		// Load more events button
+		document.getElementById('loadMoreEvents').addEventListener('click', function() {
+			loadTimelineEvents(timelineOffset, true);
+		});
+
 		// Load data when page loads
 		loadPregnancyData();
+		loadTimelineEvents();
 	</script>
 </body>
 </html>
