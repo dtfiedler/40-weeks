@@ -103,14 +103,15 @@ func GetTimelineEventsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user's active pregnancy
-	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	// Get user's active pregnancy (either as owner or partner)
+	pregnancy, err := GetActivePregnancyForUser(claims.UserID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "No active pregnancy found", http.StatusNotFound)
-			return
-		}
 		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if pregnancy == nil {
+		http.Error(w, "No active pregnancy found", http.StatusNotFound)
 		return
 	}
 

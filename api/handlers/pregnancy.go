@@ -118,15 +118,17 @@ func GetPregnancyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Looking for pregnancy for user ID: %d", claims.UserID)
-	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	
+	pregnancy, err := GetActivePregnancyForUser(claims.UserID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("No pregnancy found for user ID: %d", claims.UserID)
-			http.Error(w, "No active pregnancy found", http.StatusNotFound)
-			return
-		}
 		log.Printf("Database error looking for pregnancy: %v", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if pregnancy == nil {
+		log.Printf("No pregnancy found for user ID: %d (neither as owner nor partner)", claims.UserID)
+		http.Error(w, "No active pregnancy found", http.StatusNotFound)
 		return
 	}
 
@@ -482,6 +484,64 @@ func GetActivePregnancyByUserID(userID int) (*models.Pregnancy, error) {
 
 	var pregnancy models.Pregnancy
 	err := db.GetDB().QueryRow(query, userID).Scan(
+		&pregnancy.ID,
+		&pregnancy.UserID,
+		&pregnancy.PartnerName,
+		&pregnancy.PartnerEmail,
+		&pregnancy.DueDate,
+		&pregnancy.ConceptionDate,
+		&pregnancy.CurrentWeek,
+		&pregnancy.BabyName,
+		&pregnancy.IsActive,
+		&pregnancy.ShareID,
+		&pregnancy.CreatedAt,
+		&pregnancy.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &pregnancy, nil
+}
+
+// GetActivePregnancyForUser returns pregnancy for user (either as owner or partner)
+func GetActivePregnancyForUser(userID int) (*models.Pregnancy, error) {
+	// First, try to find a pregnancy owned by the user
+	pregnancy, err := GetActivePregnancyByUserID(userID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	// If no pregnancy found as owner, check if user is listed as partner
+	if pregnancy == nil {
+		// Get user email to search partner pregnancies
+		user, err := GetUserByID(userID)
+		if err != nil {
+			return nil, err
+		}
+		
+		// Search for pregnancies where this user is the partner
+		pregnancy, err = GetActivePregnancyByPartnerEmail(user.Email)
+		if err != nil && err != sql.ErrNoRows {
+			return nil, err
+		}
+	}
+
+	return pregnancy, nil
+}
+
+func GetActivePregnancyByPartnerEmail(email string) (*models.Pregnancy, error) {
+	query := `
+		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
+		FROM pregnancies 
+		WHERE partner_email = ? AND is_active = TRUE
+		ORDER BY created_at DESC
+		LIMIT 1
+	`
+
+	var pregnancy models.Pregnancy
+	err := db.GetDB().QueryRow(query, email).Scan(
 		&pregnancy.ID,
 		&pregnancy.UserID,
 		&pregnancy.PartnerName,

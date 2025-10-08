@@ -63,15 +63,16 @@ func CreateVillageMemberHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user's pregnancy
-	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	// Get user's pregnancy (either as owner or partner)
+	pregnancy, err := GetActivePregnancyForUser(claims.UserID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "No active pregnancy found", http.StatusNotFound)
-			return
-		}
 		log.Printf("Database error getting pregnancy: %v", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if pregnancy == nil {
+		http.Error(w, "No active pregnancy found", http.StatusNotFound)
 		return
 	}
 
@@ -139,15 +140,16 @@ func CreateVillageMembersBulkHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Get user's pregnancy
-	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	// Get user's pregnancy (either as owner or partner)
+	pregnancy, err := GetActivePregnancyForUser(claims.UserID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "No active pregnancy found", http.StatusNotFound)
-			return
-		}
 		log.Printf("Database error getting pregnancy: %v", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if pregnancy == nil {
+		http.Error(w, "No active pregnancy found", http.StatusNotFound)
 		return
 	}
 
@@ -204,15 +206,16 @@ func GetVillageMembersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user's pregnancy
-	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	// Get user's pregnancy (either as owner or partner)
+	pregnancy, err := GetActivePregnancyForUser(claims.UserID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "No active pregnancy found", http.StatusNotFound)
-			return
-		}
 		log.Printf("Database error getting pregnancy: %v", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if pregnancy == nil {
+		http.Error(w, "No active pregnancy found", http.StatusNotFound)
 		return
 	}
 
@@ -253,15 +256,16 @@ func DeleteVillageMemberHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user's pregnancy
-	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	// Get user's pregnancy (either as owner or partner)
+	pregnancy, err := GetActivePregnancyForUser(claims.UserID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "No active pregnancy found", http.StatusNotFound)
-			return
-		}
 		log.Printf("Database error getting pregnancy: %v", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if pregnancy == nil {
+		http.Error(w, "No active pregnancy found", http.StatusNotFound)
 		return
 	}
 
@@ -322,15 +326,16 @@ func UpdateVillageMemberHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user's pregnancy
-	pregnancy, err := GetActivePregnancyByUserID(claims.UserID)
+	// Get user's pregnancy (either as owner or partner)
+	pregnancy, err := GetActivePregnancyForUser(claims.UserID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "No active pregnancy found", http.StatusNotFound)
-			return
-		}
 		log.Printf("Database error getting pregnancy: %v", err)
 		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if pregnancy == nil {
+		http.Error(w, "No active pregnancy found", http.StatusNotFound)
 		return
 	}
 
