@@ -143,6 +143,10 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Set cache headers for images (cache for 1 year since they don't change)
+	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	w.Header().Set("Expires", "Thu, 31 Dec 2037 23:55:55 GMT")
+
 	// Serve the file
 	http.ServeFile(w, r, fullPath)
 }
@@ -165,6 +169,10 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid video path", http.StatusBadRequest)
 		return
 	}
+
+	// Set cache headers for videos (cache for 1 year since they don't change)
+	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	w.Header().Set("Expires", "Thu, 31 Dec 2037 23:55:55 GMT")
 
 	// Set appropriate content type for videos
 	ext := strings.ToLower(filepath.Ext(cleanPath))
