@@ -126,17 +126,36 @@
 	<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 		<!-- Welcome Section -->
 		<div class="mb-8">
-			<div class="hero-gradient rounded-lg p-6 text-white">
-				<div class="flex items-center justify-between">
-					<div>
-						<h1 class="text-2xl font-bold font-serif mb-2">Welcome back!</h1>
-						<p class="text-yellow-100" id="pregnancyGreeting">Loading your pregnancy details...</p>
-					</div>
-					<div class="text-right">
-						<div class="text-3xl font-bold" id="currentWeek">--</div>
-						<div class="text-yellow-100 text-sm">weeks</div>
+			<div class="hero-gradient rounded-lg p-6 text-white relative overflow-hidden">
+				<!-- Cover Photo Background -->
+				<div id="coverPhotoBackground" class="absolute inset-0 opacity-30 bg-black hidden">
+					<img id="coverPhotoImage" src="" alt="Cover photo" class="w-full h-full object-cover">
+				</div>
+				
+				<!-- Content -->
+				<div class="relative z-10 flex items-center justify-between">
+					<div class="flex-1">
+						<div class="flex items-center justify-between">
+							<div>
+								<h1 class="text-2xl font-bold font-serif mb-2">Welcome back!</h1>
+								<p class="text-yellow-100" id="pregnancyGreeting">Loading your pregnancy details...</p>
+							</div>
+							<div class="text-right">
+								<div class="text-3xl font-bold" id="currentWeek">--</div>
+								<div class="text-yellow-100 text-sm">weeks</div>
+							</div>
+						</div>
 					</div>
 				</div>
+				
+				<!-- Cover Photo Edit Button -->
+				<button id="editCoverPhotoBtn" onclick="showCoverPhotoModal()" 
+					class="absolute top-4 right-4 bg-black bg-opacity-70 hover:bg-opacity-90 text-white p-3 rounded-lg transition-all duration-200 shadow-lg z-20">
+					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+					</svg>
+				</button>
 			</div>
 		</div>
 
@@ -378,6 +397,9 @@
 			const currentWeekEl = document.getElementById('currentWeek');
 			currentWeekEl.textContent = pregnancy.current_week_calculated || '--';
 
+			// Update cover photo in welcome section
+			updateWelcomeCoverPhoto(pregnancy);
+
 			// Update pregnancy details
 			const dueDate = new Date(pregnancy.due_date).toLocaleDateString();
 			document.getElementById('dueDate').textContent = dueDate;
@@ -390,6 +412,24 @@
 			const diffTime = due - today;
 			const weeksRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
 			document.getElementById('weeksRemaining').textContent = weeksRemaining > 0 ? `${weeksRemaining} weeks` : 'Due any day!';
+		}
+
+		function updateWelcomeCoverPhoto(pregnancy) {
+			const coverPhotoBackground = document.getElementById('coverPhotoBackground');
+			const coverPhotoImage = document.getElementById('coverPhotoImage');
+			const editButton = document.getElementById('editCoverPhotoBtn');
+			
+			if (pregnancy.cover_photo_filename) {
+				// Show cover photo
+				coverPhotoImage.src = `/images/covers/${pregnancy.cover_photo_filename}`;
+				coverPhotoBackground.classList.remove('hidden');
+			} else {
+				// Hide cover photo
+				coverPhotoBackground.classList.add('hidden');
+			}
+			
+			// Button should always be visible for both adding and editing
+			editButton.style.display = 'block';
 		}
 
 		function showError(message) {
@@ -1263,6 +1303,109 @@
 				closeVideoModal();
 			}
 		}
+
+		// Cover Photo Functions
+		function showCoverPhotoModal() {
+			updateCoverPhotoModal();
+			document.getElementById('coverPhotoModal').classList.remove('hidden');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function closeCoverPhotoModal() {
+			document.getElementById('coverPhotoModal').classList.add('hidden');
+			document.body.style.overflow = '';
+		}
+
+		function updateCoverPhotoModal() {
+			const currentPhotoDiv = document.getElementById('currentCoverPhoto');
+			const noPhotoDiv = document.getElementById('noCoverPhoto');
+			const currentPhotoImage = document.getElementById('currentCoverPhotoImage');
+			
+			// Check if cover photo exists in the welcome section
+			const welcomeCoverPhoto = document.getElementById('coverPhotoImage');
+			const hasCoverPhoto = welcomeCoverPhoto && welcomeCoverPhoto.src && !welcomeCoverPhoto.src.includes('data:');
+			
+			if (hasCoverPhoto) {
+				currentPhotoDiv.classList.remove('hidden');
+				noPhotoDiv.classList.add('hidden');
+				currentPhotoImage.src = welcomeCoverPhoto.src;
+			} else {
+				currentPhotoDiv.classList.add('hidden');
+				noPhotoDiv.classList.remove('hidden');
+			}
+		}
+
+		async function uploadCoverPhoto(file) {
+			const formData = new FormData();
+			formData.append('cover_photo', file);
+			
+			// Show progress
+			document.getElementById('coverPhotoUploadProgress').classList.remove('hidden');
+			
+			try {
+				const response = await fetch('/api/cover-photo', {
+					method: 'POST',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					},
+					body: formData
+				});
+				
+				if (response.ok) {
+					// Reload pregnancy data to update the welcome section
+					await loadPregnancyData();
+					// Update the modal display
+					updateCoverPhotoModal();
+					showSuccess('Cover photo updated successfully!');
+				} else {
+					const errorText = await response.text();
+					showError(errorText || 'Failed to upload cover photo');
+				}
+			} catch (error) {
+				showError('Network error uploading cover photo');
+			} finally {
+				document.getElementById('coverPhotoUploadProgress').classList.add('hidden');
+			}
+		}
+
+		async function deleteCoverPhoto() {
+			try {
+				const response = await fetch('/api/cover-photo', {
+					method: 'DELETE',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					// Reload pregnancy data to update the welcome section
+					await loadPregnancyData();
+					// Update the modal display
+					updateCoverPhotoModal();
+					showSuccess('Cover photo removed successfully!');
+				} else {
+					const errorText = await response.text();
+					showError(errorText || 'Failed to remove cover photo');
+				}
+			} catch (error) {
+				showError('Network error removing cover photo');
+			}
+		}
+
+		function showSuccess(message) {
+			console.log('Success:', message);
+			// Could add a toast notification here
+		}
+
+		// Set up file input event listener for cover photo
+		document.addEventListener('DOMContentLoaded', function() {
+			document.getElementById('coverPhotoInput').addEventListener('change', function(e) {
+				const file = e.target.files[0];
+				if (file) {
+					uploadCoverPhoto(file);
+				}
+			});
+		});
 	</script>
 
 	<!-- Photo Modal -->
@@ -1297,6 +1440,64 @@
 				<video id="videoModalVideo" class="max-w-full max-h-full rounded-lg" controls>
 					Your browser does not support the video tag.
 				</video>
+			</div>
+		</div>
+	</div>
+
+	<!-- Cover Photo Modal -->
+	<div id="coverPhotoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+		<div class="card max-w-md w-full">
+			<div class="p-6">
+				<div class="flex justify-between items-center mb-6">
+					<h3 class="text-xl font-semibold text-gray-900">Cover Photo</h3>
+					<button onclick="closeCoverPhotoModal()" class="text-gray-400 hover:text-gray-600">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						</svg>
+					</button>
+				</div>
+
+				<div id="coverPhotoContent">
+					<!-- Current Photo -->
+					<div id="currentCoverPhoto" class="mb-6">
+						<img id="currentCoverPhotoImage" src="" alt="Current cover photo" class="w-full h-32 object-cover rounded-lg">
+						<div class="flex justify-center mt-3">
+							<button onclick="deleteCoverPhoto()" class="text-red-600 hover:text-red-700 text-sm">
+								Remove Photo
+							</button>
+						</div>
+					</div>
+					
+					<!-- No Photo State -->
+					<div id="noCoverPhoto" class="text-center mb-6">
+						<svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+							<path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+						<p class="mt-2 text-sm text-gray-600">No cover photo set</p>
+					</div>
+
+					<!-- Upload Section -->
+					<div class="space-y-4">
+						<input type="file" id="coverPhotoInput" accept="image/*" class="hidden">
+						<button type="button" onclick="document.getElementById('coverPhotoInput').click()" 
+								class="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+							Choose New Photo
+						</button>
+						
+						<!-- Upload Progress -->
+						<div id="coverPhotoUploadProgress" class="hidden">
+							<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+								<div class="flex items-center">
+									<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+										<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+										<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+									</svg>
+									<span class="text-blue-800">Uploading photo...</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

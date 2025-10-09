@@ -139,7 +139,10 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Security check - ensure path doesn't escape images directory
 	cleanPath := filepath.Clean(fullPath)
-	if !strings.HasPrefix(cleanPath, config.AppConfig.ImagesDirectory) {
+	absImagesDir, _ := filepath.Abs(config.AppConfig.ImagesDirectory)
+	absCleanPath, _ := filepath.Abs(cleanPath)
+	
+	if !strings.HasPrefix(absCleanPath, absImagesDir) {
 		http.Error(w, "Invalid image path", http.StatusBadRequest)
 		return
 	}
