@@ -1,0 +1,1 @@
+ALTER TABLE pregnancy_updates DROP COLUMN update_date;

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pregnancy Timeline - 40Weeks</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Follow the pregnancy journey">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					fontFamily: {
+						'sans': ['Poppins', 'system-ui', 'sans-serif'],
+						'serif': ['DM Serif Display', 'serif'],
+					},
+					colors: {
+						primary: {
+							50: '#fffbeb',
+							100: '#fef3c7',
+							200: '#fde68a',
+							300: '#fcd34d',
+							400: '#fbbf24',
+							500: '#f59e0b',
+							600: '#d97706',
+							700: '#b45309',
+							800: '#92400e',
+							900: '#78350f'
+						}
+					}
+				}
+			}
+		}
+	</script>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+	<style>
+		/* Shadcn-inspired custom styles */
+		:root {
+			--background: 0 0% 100%;
+			--foreground: 240 10% 3.9%;
+			--card: 0 0% 100%;
+			--card-foreground: 240 10% 3.9%;
+			--primary: 240 5.9% 10%;
+			--primary-foreground: 0 0% 98%;
+			--secondary: 240 4.8% 95.9%;
+			--secondary-foreground: 240 5.9% 10%;
+			--muted: 240 4.8% 95.9%;
+			--muted-foreground: 240 3.8% 46.1%;
+			--border: 240 5.9% 90%;
+			--radius: 0.5rem;
+		}
+
+		body {
+			font-family: 'Poppins', sans-serif;
+			background-color: hsl(var(--background));
+			color: hsl(var(--foreground));
+		}
+
+		.card {
+			background-color: hsl(var(--card));
+			color: hsl(var(--card-foreground));
+			border-radius: var(--radius);
+			border: 1px solid hsl(var(--border));
+			box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+		}
+	</style>
+</head>
+<body class="min-h-screen bg-gray-50">
+	<!-- Header -->
+	<header class="bg-white border-b border-gray-200">
+		<div class="max-w-4xl mx-auto px-4 py-6">
+			<div class="text-center">
+				<h1 id="pregnancyTitle" class="text-3xl font-bold text-gray-900 font-serif">Pregnancy Journey</h1>
+				<p id="pregnancySubtitle" class="text-gray-600 mt-2">Following the pregnancy journey</p>
+			</div>
+		</div>
+	</header>
+
+	<!-- Main Content -->
+	<main class="max-w-4xl mx-auto px-4 py-8">
+		<!-- Timeline -->
+		<div class="space-y-6" id="timelineContainer">
+			<div class="text-center py-8">
+				<div class="text-gray-500">Loading pregnancy updates...</div>
+			</div>
+		</div>
+
+		<!-- Load More Button -->
+		<div class="text-center mt-8">
+			<button id="loadMoreBtn" class="hidden px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors">
+				Load More Updates
+			</button>
+		</div>
+	</main>
+
+	<script>
+		let currentOffset = 0;
+		const limit = 10;
+		let hasMoreUpdates = true;
+
+		// Get share ID from URL
+		const pathParts = window.location.pathname.split('/');
+		const shareId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+
+		// Load timeline on page load
+		async function loadTimeline(append = false) {
+			try {
+				const response = await fetch(`/timeline/${shareId}?limit=${limit}&offset=${currentOffset}`);
+				
+				if (!response.ok) {
+					if (response.status === 404) {
+						showError('Pregnancy not found. Please check your link.');
+						return;
+					}
+					showError('Failed to load timeline');
+					return;
+				}
+
+				const data = await response.json();
+				
+				if (!append) {
+					// Update page title and info
+					updatePregnancyInfo(data.pregnancy);
+				}
+				
+				displayUpdates(data.updates, append);
+				
+				// Update load more button
+				if (data.updates.length < limit) {
+					hasMoreUpdates = false;
+					document.getElementById('loadMoreBtn').style.display = 'none';
+				} else {
+					currentOffset += limit;
+					document.getElementById('loadMoreBtn').style.display = 'block';
+				}
+				
+			} catch (err) {
+				console.error('Error loading timeline:', err);
+				showError('Network error loading timeline');
+			}
+		}
+
+		function updatePregnancyInfo(pregnancy) {
+			document.getElementById('pregnancyTitle').textContent = `${pregnancy.parent_names}'s Journey`;
+			document.getElementById('pregnancySubtitle').textContent = `Week ${pregnancy.current_week} • Due ${formatDate(pregnancy.due_date)}`;
+			document.title = `${pregnancy.parent_names}'s Journey - 40Weeks`;
+		}
+
+		function displayUpdates(updates, append = false) {
+			const container = document.getElementById('timelineContainer');
+			
+			if (!append) {
+				container.innerHTML = '';
+			}
+
+			if (updates.length === 0 && !append) {
+				container.innerHTML = `
+					<div class="text-center py-12">
+						<div class="text-gray-500">No updates have been shared yet.</div>
+						<div class="text-gray-400 text-sm mt-2">Check back soon for pregnancy updates!</div>
+					</div>
+				`;
+				return;
+			}
+
+			updates.forEach(update => {
+				const updateElement = createUpdateElement(update);
+				container.appendChild(updateElement);
+			});
+		}
+
+		function createUpdateElement(update) {
+			const div = document.createElement('div');
+			div.className = 'card';
+			
+			const updateDate = new Date(update.update_date);
+			const timeAgo = getTimeAgo(updateDate);
+			
+			let mediaHtml = '';
+			if (update.photos && update.photos.length > 0) {
+				// Separate photos and videos
+				const photos = update.photos.filter(item => {
+					const ext = item.filename.toLowerCase().split('.').pop();
+					return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+				});
+				const videos = update.photos.filter(item => {
+					const ext = item.filename.toLowerCase().split('.').pop();
+					return ['mp4', 'mov'].includes(ext);
+				});
+
+				const allMedia = [...photos, ...videos];
+				
+				mediaHtml = `
+					<div class="mt-4">
+						<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+							${allMedia.slice(0, 6).map(media => {
+								const ext = media.filename.toLowerCase().split('.').pop();
+								const isVideo = ['mp4', 'mov'].includes(ext);
+								
+								if (isVideo) {
+									return `
+										<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer relative" 
+											 onclick="openVideoModal('/videos/${update.pregnancy_id}/${media.filename}', '${media.original_filename}')">
+											<video class="w-full h-full object-cover" preload="metadata">
+												<source src="/videos/${update.pregnancy_id}/${media.filename}#t=0.5" type="video/${ext === 'mov' ? 'quicktime' : 'mp4'}">
+											</video>
+											<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+												<div class="w-10 h-10 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
+													<svg class="w-5 h-5 text-gray-800" fill="currentColor" viewBox="0 0 20 20">
+														<path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+													</svg>
+												</div>
+											</div>
+										</div>
+									`;
+								} else {
+									return `
+										<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer" 
+											 onclick="openPhotoModal('/images/${update.pregnancy_id}/${media.filename}', '${media.original_filename}')">
+											<img src="/images/${update.pregnancy_id}/${media.filename}" 
+												 alt="${media.original_filename}"
+												 class="w-full h-full object-cover"
+												 loading="lazy"
+												 onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'>📷</div>'">
+										</div>
+									`;
+								}
+							}).join('')}
+							${allMedia.length > 6 ? `
+								<div class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+									+${allMedia.length - 6} more
+								</div>
+							` : ''}
+						</div>
+					</div>
+				`;
+			}
+			
+			div.innerHTML = `
+				<div class="p-6">
+					<div class="flex items-start space-x-4">
+						<div class="flex-shrink-0">
+							<div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+								<span class="text-xl">📸</span>
+							</div>
+						</div>
+						<div class="flex-1 min-w-0">
+							<div class="flex items-center justify-between">
+								<div class="flex-1">
+									<h3 class="text-lg font-semibold text-gray-900">${update.title}</h3>
+									<p class="text-sm text-gray-500 mt-1">Posted by ${update.created_by.split(' ')[0]}</p>
+								</div>
+								<div class="flex items-center space-x-2 text-sm text-gray-500">
+									${update.week_number ? `<span class="bg-gray-100 px-2 py-1 rounded">Week ${update.week_number}</span>` : ''}
+									<span>${timeAgo}</span>
+								</div>
+							</div>
+							${update.description ? `<p class="text-gray-700 mt-3">${update.description}</p>` : ''}
+							${mediaHtml}
+						</div>
+					</div>
+				</div>
+			`;
+			
+			return div;
+		}
+
+		// Utility functions
+		function formatDate(dateString) {
+			const date = new Date(dateString);
+			return date.toLocaleDateString('en-US', { 
+				year: 'numeric', 
+				month: 'long', 
+				day: 'numeric' 
+			});
+		}
+
+		function getTimeAgo(date) {
+			const now = new Date();
+			const diffTime = Math.abs(now - date);
+			const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+			
+			if (diffDays === 0) {
+				const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+				if (diffHours === 0) {
+					const diffMinutes = Math.floor(diffTime / (1000 * 60));
+					return diffMinutes <= 1 ? 'Just now' : `${diffMinutes} minutes ago`;
+				}
+				return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
+			} else if (diffDays === 1) {
+				return 'Yesterday';
+			} else if (diffDays < 7) {
+				return `${diffDays} days ago`;
+			} else if (diffDays < 30) {
+				const weeks = Math.floor(diffDays / 7);
+				return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+			} else {
+				return date.toLocaleDateString();
+			}
+		}
+
+		function showError(message) {
+			const container = document.getElementById('timelineContainer');
+			container.innerHTML = `
+				<div class="text-center py-12">
+					<div class="text-red-500">${message}</div>
+				</div>
+			`;
+		}
+
+		// Media modal functions
+		function openPhotoModal(imageSrc, originalName) {
+			const modal = document.getElementById('photoModal');
+			const img = document.getElementById('photoModalImage');
+			const caption = document.getElementById('photoModalCaption');
+			
+			img.src = imageSrc;
+			caption.textContent = originalName || 'Photo';
+			modal.classList.remove('hidden');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function openVideoModal(videoSrc, originalName) {
+			const modal = document.getElementById('videoModal');
+			const video = document.getElementById('videoModalVideo');
+			const caption = document.getElementById('videoModalCaption');
+			
+			video.src = videoSrc;
+			caption.textContent = originalName || 'Video';
+			modal.classList.remove('hidden');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function closePhotoModal() {
+			const modal = document.getElementById('photoModal');
+			modal.classList.add('hidden');
+			document.body.style.overflow = '';
+		}
+
+		function closeVideoModal() {
+			const modal = document.getElementById('videoModal');
+			const video = document.getElementById('videoModalVideo');
+			video.pause();
+			video.src = '';
+			modal.classList.add('hidden');
+			document.body.style.overflow = '';
+		}
+
+		function handlePhotoModalClick(event) {
+			if (event.target.id === 'photoModal') {
+				closePhotoModal();
+			}
+		}
+
+		function handleVideoModalClick(event) {
+			if (event.target.id === 'videoModal') {
+				closeVideoModal();
+			}
+		}
+
+		// Load more button
+		document.getElementById('loadMoreBtn').addEventListener('click', function() {
+			if (hasMoreUpdates) {
+				loadTimeline(true);
+			}
+		});
+
+		// Load timeline on page load
+		loadTimeline();
+	</script>
+
+	<!-- Photo Modal -->
+	<div id="photoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="handlePhotoModalClick(event)">
+		<div class="max-w-4xl max-h-full flex flex-col">
+			<div class="flex justify-between items-center mb-4">
+				<h3 id="photoModalCaption" class="text-white text-lg font-medium"></h3>
+				<button onclick="closePhotoModal()" class="text-white hover:text-gray-300">
+					<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+			<div class="flex-1 flex items-center justify-center">
+				<img id="photoModalImage" class="max-w-full max-h-full object-contain rounded-lg" alt="Photo">
+			</div>
+		</div>
+	</div>
+
+	<!-- Video Modal -->
+	<div id="videoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="handleVideoModalClick(event)">
+		<div class="max-w-4xl max-h-full flex flex-col">
+			<div class="flex justify-between items-center mb-4">
+				<h3 id="videoModalCaption" class="text-white text-lg font-medium"></h3>
+				<button onclick="closeVideoModal()" class="text-white hover:text-gray-300">
+					<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+			<div class="flex-1 flex items-center justify-center">
+				<video id="videoModalVideo" class="max-w-full max-h-full rounded-lg" controls>
+					Your browser does not support the video tag.
+				</video>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

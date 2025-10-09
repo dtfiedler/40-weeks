@@ -49,6 +49,10 @@ func ManagePregnancyPageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "public/manage-pregnancy.html")
 }
 
+func PublicTimelinePageHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "public/timeline.html")
+}
+
 func SharePageHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract share_id from URL path
 	path := strings.TrimPrefix(r.URL.Path, "/share/")

@@ -1,0 +1,1 @@
+ALTER TABLE pregnancy_updates ADD COLUMN update_date DATETIME;

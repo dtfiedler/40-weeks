@@ -141,7 +141,7 @@
 		</div>
 
 		<!-- Quick Actions -->
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+		<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 			<div class="card p-6 text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="addToVillage()">
 				<div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
 					<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,14 +163,25 @@
 				<p class="text-gray-600 text-sm">Share photos and news with your village</p>
 			</div>
 
-			<div class="card p-6 text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="viewMilestones()">
+			<div class="card p-6 text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="viewTimeline()">
 				<div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
 					<svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
 					</svg>
 				</div>
-				<h3 class="text-lg font-semibold text-gray-900 mb-2">View Milestones</h3>
-				<p class="text-gray-600 text-sm">Track upcoming appointments and events</p>
+				<h3 class="text-lg font-semibold text-gray-900 mb-2">View Timeline</h3>
+				<p class="text-gray-600 text-sm">See your shared updates and photos</p>
+			</div>
+
+			<div class="card p-6 text-center hover:shadow-lg transition-shadow cursor-pointer" onclick="shareTimeline()">
+				<div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+					<svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+					</svg>
+				</div>
+				<h3 class="text-lg font-semibold text-gray-900 mb-2">Share Timeline</h3>
+				<p class="text-gray-600 text-sm">Copy link to share your journey</p>
 			</div>
 		</div>
 
@@ -223,17 +234,21 @@
 		<!-- Pregnancy Timeline -->
 		<div class="mt-8">
 			<div class="card p-6">
-				<div class="flex items-center justify-between mb-6">
+				<div class="mb-6">
 					<h2 class="text-xl font-semibold text-gray-900 font-serif">Your Pregnancy Timeline</h2>
-					<button id="loadMoreEvents" class="btn-secondary text-sm" style="display: none;">
-						Load More
-					</button>
 				</div>
 				
 				<div id="timelineContainer" class="space-y-4">
 					<div class="text-center py-8">
 						<div class="text-gray-500">Loading your pregnancy journey...</div>
 					</div>
+				</div>
+				
+				<!-- Load More Button - centered at bottom -->
+				<div class="flex justify-center mt-6">
+					<button id="loadMoreEvents" class="btn-secondary" style="display: none;">
+						Load More
+					</button>
 				</div>
 			</div>
 		</div>
@@ -388,13 +403,65 @@
 		}
 
 		function postUpdate() {
-			// TODO: Implement update posting
-			alert('Update posting coming soon!');
+			showUpdateModal();
 		}
 
 		function viewMilestones() {
 			// TODO: Implement milestone view
 			alert('Milestone tracking coming soon!');
+		}
+
+		async function viewTimeline() {
+			try {
+				const response = await fetch('/api/pregnancy/invite-hash', {
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					const data = await response.json();
+					const timelineLink = `${window.location.origin}/view/${data.hash}`;
+					window.open(timelineLink, '_blank');
+				} else {
+					showError('Failed to get timeline link');
+				}
+			} catch (err) {
+				showError('Network error. Please try again.');
+			}
+		}
+
+		async function shareTimeline() {
+			try {
+				const response = await fetch('/api/pregnancy/invite-hash', {
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					const data = await response.json();
+					const timelineLink = `${window.location.origin}/view/${data.hash}`;
+					
+					if (navigator.clipboard) {
+						await navigator.clipboard.writeText(timelineLink);
+						showSuccess('Timeline link copied to clipboard!');
+					} else {
+						// Fallback for older browsers
+						const textArea = document.createElement('textarea');
+						textArea.value = timelineLink;
+						document.body.appendChild(textArea);
+						textArea.select();
+						document.execCommand('copy');
+						document.body.removeChild(textArea);
+						showSuccess('Timeline link copied to clipboard!');
+					}
+				} else {
+					showError('Failed to get timeline link');
+				}
+			} catch (err) {
+				showError('Network error. Please try again.');
+			}
 		}
 
 		function editPregnancyDetails() {
@@ -425,7 +492,7 @@
 					
 					// Show/hide load more button
 					const loadMoreBtn = document.getElementById('loadMoreEvents');
-					if (data.events.length === timelineLimit) {
+					if (data.events && data.events.length === timelineLimit) {
 						loadMoreBtn.style.display = 'block';
 						timelineOffset = offset + timelineLimit;
 					} else {
@@ -466,27 +533,104 @@
 		// Create timeline event element
 		function createTimelineEventElement(event) {
 			const div = document.createElement('div');
-			div.className = 'flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors';
+			div.className = 'border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors';
 			
-			const icon = getEventIcon(event.event_type);
-			const color = getEventColor(event.event_type);
+			const icon = getEventIcon(event.type === 'event' ? event.event_type : 'update_posted');
+			const color = getEventColor(event.type === 'event' ? event.event_type : 'update_posted');
 			const timeAgo = getTimeAgo(event.created_at);
+			const title = event.title;
 			
-			div.innerHTML = `
-				<div class="flex-shrink-0">
-					<div class="w-10 h-10 ${color} bg-opacity-10 rounded-full flex items-center justify-center">
-						<span class="text-lg">${icon}</span>
-					</div>
-				</div>
-				<div class="flex-1 min-w-0">
-					<div class="flex items-center justify-between">
-						<h3 class="text-sm font-medium text-gray-900">${event.event_title}</h3>
-						<div class="flex items-center space-x-2 text-xs text-gray-500">
-							${event.week_number ? `<span class="bg-gray-100 px-2 py-1 rounded">Week ${event.week_number}</span>` : ''}
-							<span>${timeAgo}</span>
+			let mediaHtml = '';
+			if (event.type === 'update' && event.photos && event.photos.length > 0) {
+				// Separate photos and videos
+				const photos = event.photos.filter(item => {
+					const ext = item.filename.toLowerCase().split('.').pop();
+					return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+				});
+				const videos = event.photos.filter(item => {
+					const ext = item.filename.toLowerCase().split('.').pop();
+					return ['mp4', 'mov'].includes(ext);
+				});
+
+				const allMedia = [...photos, ...videos];
+				
+				mediaHtml = `
+					<div class="mt-3">
+						<div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+							${allMedia.slice(0, 6).map(media => {
+								const ext = media.filename.toLowerCase().split('.').pop();
+								const isVideo = ['mp4', 'mov'].includes(ext);
+								const path = isVideo ? 'videos' : 'images';
+								
+								if (isVideo) {
+									return `
+										<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer relative" 
+											 onclick="openVideoModal('/videos/${event.pregnancy_id}/${media.filename}', '${media.original_filename}')">
+											<video class="w-full h-full object-cover" preload="metadata">
+												<source src="/videos/${event.pregnancy_id}/${media.filename}#t=0.5" type="video/${ext === 'mov' ? 'quicktime' : 'mp4'}">
+											</video>
+											<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+												<div class="w-8 h-8 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
+													<svg class="w-4 h-4 text-gray-800" fill="currentColor" viewBox="0 0 20 20">
+														<path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+													</svg>
+												</div>
+											</div>
+										</div>
+									`;
+								} else {
+									return `
+										<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer" 
+											 onclick="openPhotoModal('/images/${event.pregnancy_id}/${media.filename}', '${media.original_filename}')">
+											<img src="/images/${event.pregnancy_id}/${media.filename}" 
+												 alt="${media.original_filename}"
+												 class="w-full h-full object-cover"
+												 loading="lazy"
+												 onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'>📷</div>'">
+										</div>
+									`;
+								}
+							}).join('')}
+							${allMedia.length > 6 ? `
+								<div class="aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+									+${allMedia.length - 6} more
+								</div>
+							` : ''}
 						</div>
 					</div>
-					${event.event_description ? `<p class="text-sm text-gray-600 mt-1">${event.event_description}</p>` : ''}
+				`;
+			}
+			
+			div.innerHTML = `
+				<div class="p-4">
+					<div class="flex items-start space-x-4">
+						<div class="flex-shrink-0">
+							<div class="w-10 h-10 ${color} bg-opacity-10 rounded-full flex items-center justify-center">
+								<span class="text-lg">${icon}</span>
+							</div>
+						</div>
+						<div class="flex-1 min-w-0">
+							<div class="flex items-center justify-between">
+								<div class="flex-1">
+									<h3 class="text-sm font-medium text-gray-900">${title}</h3>
+									${event.type === 'update' && event.created_by ? `<p class="text-xs text-gray-500 mt-1">Posted by ${event.created_by.split(' ')[0]}</p>` : ''}
+								</div>
+								<div class="flex items-center space-x-2 text-xs text-gray-500">
+									${event.week_number ? `<span class="bg-gray-100 px-2 py-1 rounded">Week ${event.week_number}</span>` : ''}
+									<span>${timeAgo}</span>
+									${event.type === 'update' ? `
+										<button onclick="editUpdate(${event.id})" class="text-blue-600 hover:text-blue-800 ml-2 p-1 hover:bg-blue-50 rounded">
+											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+											</svg>
+										</button>
+									` : ''}
+								</div>
+							</div>
+							${event.description ? `<p class="text-sm text-gray-600 mt-1">${event.description}</p>` : ''}
+							${mediaHtml}
+						</div>
+					</div>
 				</div>
 			`;
 			
@@ -501,7 +645,7 @@
 				'villager_told': '💌',
 				'milestone_reached': '🏆',
 				'appointment_completed': '🏥',
-				'update_posted': '📝',
+				'update_posted': '📸',
 				'week_progression': '📅'
 			};
 			return icons[eventType] || '📌';
@@ -515,7 +659,7 @@
 				'villager_told': 'text-purple-600',
 				'milestone_reached': 'text-yellow-600',
 				'appointment_completed': 'text-green-600',
-				'update_posted': 'text-indigo-600',
+				'update_posted': 'text-purple-600',
 				'week_progression': 'text-gray-600'
 			};
 			return colors[eventType] || 'text-gray-500';
@@ -555,6 +699,606 @@
 		// Load data when page loads
 		loadPregnancyData();
 		loadTimelineEvents();
+		loadMilestones();
 	</script>
+
+	<!-- Update Modal -->
+	<div id="updateModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+		<div class="card max-w-lg w-full max-h-[90vh] overflow-y-auto">
+			<div class="p-6">
+				<div class="flex justify-between items-center mb-6">
+					<h3 class="text-xl font-semibold text-gray-900">Post an Update</h3>
+					<button onclick="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						</svg>
+					</button>
+				</div>
+
+				<form id="updateForm" onsubmit="submitUpdate(event)">
+					<!-- Update Title -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+						<input type="text" name="title" required
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+							placeholder="e.g., 20 Week Ultrasound">
+					</div>
+
+					<!-- Update Date -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+						<input type="date" name="updateDate" 
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						<p class="text-xs text-gray-500 mt-1">Leave blank to use today's date</p>
+					</div>
+
+					<!-- Milestone Dropdown -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Related Milestone (optional)</label>
+						<select name="milestone" 
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+							<option value="">Select a milestone</option>
+							<option value="first_appointment">First Appointment</option>
+							<option value="12_week_scan">12 Week Scan</option>
+							<option value="20_week_scan">20 Week Anatomy Scan</option>
+							<option value="28_week_checkup">28 Week Checkup</option>
+							<option value="32_week_checkup">32 Week Checkup</option>
+							<option value="36_week_checkup">36 Week Checkup</option>
+							<option value="38_week_checkup">38 Week Checkup</option>
+							<option value="40_week_checkup">40 Week Checkup</option>
+							<option value="ultrasound">Ultrasound</option>
+							<option value="bloodwork">Bloodwork</option>
+							<option value="other">Other Appointment</option>
+						</select>
+					</div>
+
+					<!-- Notes -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+						<textarea name="content" rows="4"
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+							placeholder="Share how you're feeling, what happened at the appointment, etc."></textarea>
+					</div>
+
+					<!-- Photo Upload -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Photos</label>
+						<input type="file" name="photos" accept="image/*" multiple
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						<p class="text-xs text-gray-500 mt-1">Select up to 5 photos (max 10MB each)</p>
+					</div>
+
+					<!-- Video Upload -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Videos</label>
+						<input type="file" name="videos" accept="video/mp4,video/quicktime,.mp4,.mov" multiple
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						<p class="text-xs text-gray-500 mt-1">Select up to 3 videos (.mp4 or .mov, max 50MB each)</p>
+					</div>
+
+					<!-- Share with Village -->
+					<div class="mb-6">
+						<label class="flex items-center">
+							<input type="checkbox" name="isShared" checked
+								class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+							<span class="ml-2 text-sm text-gray-700">Share with your village</span>
+						</label>
+					</div>
+
+					<!-- Buttons -->
+					<div class="flex gap-3">
+						<button type="submit" class="btn-primary flex-1">Post Update</button>
+						<button type="button" onclick="closeUpdateModal()" class="btn-secondary flex-1">Cancel</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Edit Update Modal -->
+	<div id="editUpdateModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+		<div class="card max-w-lg w-full max-h-[90vh] overflow-y-auto">
+			<div class="p-6">
+				<div class="flex justify-between items-center mb-6">
+					<h3 class="text-xl font-semibold text-gray-900">Edit Update</h3>
+					<button onclick="closeEditUpdateModal()" class="text-gray-400 hover:text-gray-600">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						</svg>
+					</button>
+				</div>
+
+				<form id="editUpdateForm" onsubmit="submitEditUpdate(event)">
+					<!-- Update Title -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+						<input type="text" name="title" required
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+							placeholder="e.g., 20 Week Ultrasound">
+					</div>
+
+					<!-- Update Date -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+						<input type="date" name="updateDate" 
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						<p class="text-xs text-gray-500 mt-1">Leave blank to use today's date</p>
+					</div>
+
+					<!-- Milestone Dropdown -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Related Milestone (optional)</label>
+						<select name="milestone" 
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+							<option value="">Select a milestone</option>
+							<option value="first_appointment">First Appointment</option>
+							<option value="12_week_scan">12 Week Scan</option>
+							<option value="20_week_scan">20 Week Anatomy Scan</option>
+							<option value="28_week_checkup">28 Week Checkup</option>
+							<option value="32_week_checkup">32 Week Checkup</option>
+							<option value="36_week_checkup">36 Week Checkup</option>
+							<option value="38_week_checkup">38 Week Checkup</option>
+							<option value="40_week_checkup">40 Week Checkup</option>
+							<option value="ultrasound">Ultrasound</option>
+							<option value="bloodwork">Bloodwork</option>
+							<option value="other">Other Appointment</option>
+						</select>
+					</div>
+
+					<!-- Notes -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+						<textarea name="content" rows="4"
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+							placeholder="Share how you're feeling, what happened at the appointment, etc."></textarea>
+					</div>
+
+					<!-- Existing Media Display -->
+					<div id="existingMedia" class="mb-4" style="display: none;">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Current Photos & Videos</label>
+						<div id="existingMediaGrid" class="grid grid-cols-3 gap-2 mb-3"></div>
+					</div>
+
+					<!-- Photo Upload -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Add Photos</label>
+						<input type="file" name="photos" accept="image/*" multiple
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						<p class="text-xs text-gray-500 mt-1">Select up to 5 additional photos (max 10MB each)</p>
+					</div>
+
+					<!-- Video Upload -->
+					<div class="mb-4">
+						<label class="block text-sm font-medium text-gray-700 mb-2">Add Videos</label>
+						<input type="file" name="videos" accept="video/mp4,video/quicktime,.mp4,.mov" multiple
+							class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+						<p class="text-xs text-gray-500 mt-1">Select up to 3 additional videos (.mp4 or .mov, max 50MB each)</p>
+					</div>
+
+					<!-- Share with Village -->
+					<div class="mb-6">
+						<label class="flex items-center">
+							<input type="checkbox" name="isShared" checked
+								class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+							<span class="ml-2 text-sm text-gray-700">Share with your village</span>
+						</label>
+					</div>
+
+					<!-- Buttons -->
+					<div class="flex gap-3">
+						<button type="submit" class="btn-primary flex-1">Update</button>
+						<button type="button" onclick="closeEditUpdateModal()" class="btn-secondary flex-1">Cancel</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Update Modal Functions
+		function showUpdateModal() {
+			const modal = document.getElementById('updateModal');
+			const dateInput = modal.querySelector('input[name="updateDate"]');
+			
+			// Set default date to today
+			const today = new Date();
+			const todayStr = today.getFullYear() + '-' + 
+				String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+				String(today.getDate()).padStart(2, '0');
+			dateInput.value = todayStr;
+			
+			modal.classList.remove('hidden');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function closeUpdateModal() {
+			document.getElementById('updateModal').classList.add('hidden');
+			document.body.style.overflow = '';
+			document.getElementById('updateForm').reset();
+		}
+
+		async function submitUpdate(event) {
+			event.preventDefault();
+			
+			const form = event.target;
+			const formData = new FormData();
+			
+			// Get current pregnancy week
+			let weekNumber = null;
+			const weekText = document.getElementById('currentWeek').textContent;
+			if (weekText && weekText !== '--') {
+				weekNumber = parseInt(weekText);
+			}
+
+			// Handle custom date - convert to UTC ISO string
+			let updateDate = null;
+			if (form.updateDate.value) {
+				// Create date in local timezone and convert to UTC
+				const localDate = new Date(form.updateDate.value + 'T00:00:00');
+				updateDate = localDate.toISOString();
+			}
+
+			// Prepare update data
+			const updateData = {
+				title: form.title.value,
+				content: form.content.value || null,
+				week_number: weekNumber,
+				update_type: form.milestone.value ? 'appointment' : 'general',
+				appointment_type: form.milestone.value || null,
+				is_shared: form.isShared.checked,
+				date: updateDate
+			};
+
+			formData.append('data', JSON.stringify(updateData));
+
+			// Add photos if selected
+			const photoFiles = form.photos.files;
+			for (let i = 0; i < photoFiles.length && i < 5; i++) {
+				formData.append('photos', photoFiles[i]);
+			}
+
+			// Add videos if selected
+			const videoFiles = form.videos.files;
+			for (let i = 0; i < videoFiles.length && i < 3; i++) {
+				formData.append('videos', videoFiles[i]);
+			}
+
+			try {
+				const response = await fetch('/api/updates', {
+					method: 'POST',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					},
+					body: formData
+				});
+
+				if (response.ok) {
+					const update = await response.json();
+					closeUpdateModal();
+					// Reload timeline to show new update
+					loadTimelineEvents();
+					showSuccess('Update posted successfully!');
+				} else {
+					const error = await response.text();
+					showError('Failed to post update: ' + error);
+				}
+			} catch (err) {
+				console.error('Error posting update:', err);
+				showError('Network error posting update');
+			}
+		}
+
+		function showSuccess(message) {
+			// Create a simple toast notification
+			const toast = document.createElement('div');
+			toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+			toast.textContent = message;
+			document.body.appendChild(toast);
+			
+			setTimeout(() => {
+				toast.remove();
+			}, 3000);
+		}
+
+		// Load milestones for the dropdown
+		async function loadMilestones() {
+			// This will be implemented when milestone endpoints are ready
+			// For now using static list in the dropdown
+		}
+
+		// Edit Update Functions
+		let currentEditUpdateId = null;
+		let currentEditPregnancyId = null;
+
+		async function editUpdate(updateId) {
+			currentEditUpdateId = updateId;
+			
+			try {
+				// Get the update data from the timeline (we'll use the event data already loaded)
+				const timelineEvents = document.querySelectorAll('#timelineContainer > div');
+				let updateData = null;
+				
+				// Find the update in the current timeline
+				for (const eventDiv of timelineEvents) {
+					const editButton = eventDiv.querySelector(`button[onclick="editUpdate(${updateId})"]`);
+					if (editButton) {
+						// Extract data from the timeline event - we need to get fresh data from API
+						break;
+					}
+				}
+				
+				// Fetch fresh update data from API
+				const response = await fetch(`/api/updates?pregnancy_id`, {
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (!response.ok) {
+					showError('Failed to load update data');
+					return;
+				}
+				
+				const updates = await response.json();
+				updateData = updates.find(u => u.id === updateId);
+				
+				if (!updateData) {
+					showError('Update not found');
+					return;
+				}
+				
+				// Store pregnancy ID for media paths
+				currentEditPregnancyId = updateData.pregnancy_id;
+				
+				// Populate the edit form
+				const form = document.getElementById('editUpdateForm');
+				form.title.value = updateData.title || '';
+				form.content.value = updateData.content || '';
+				form.isShared.checked = updateData.is_shared || false;
+				
+				// Set date
+				if (updateData.update_date) {
+					const date = new Date(updateData.update_date);
+					const dateStr = date.getFullYear() + '-' + 
+						String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+						String(date.getDate()).padStart(2, '0');
+					form.updateDate.value = dateStr;
+				}
+				
+				// Set milestone
+				if (updateData.appointment_type) {
+					form.milestone.value = updateData.appointment_type;
+				} else {
+					form.milestone.value = '';
+				}
+				
+				// Show existing media
+				displayExistingMedia(updateData.photos || []);
+				
+				// Show the modal
+				document.getElementById('editUpdateModal').classList.remove('hidden');
+				document.body.style.overflow = 'hidden';
+				
+			} catch (err) {
+				console.error('Error loading update:', err);
+				showError('Failed to load update data');
+			}
+		}
+
+		function displayExistingMedia(photos) {
+			const mediaContainer = document.getElementById('existingMediaGrid');
+			const mediaSection = document.getElementById('existingMedia');
+			
+			if (!photos || photos.length === 0) {
+				mediaSection.style.display = 'none';
+				return;
+			}
+			
+			mediaSection.style.display = 'block';
+			
+			mediaContainer.innerHTML = photos.map(photo => {
+				const ext = photo.filename.toLowerCase().split('.').pop();
+				const isVideo = ['mp4', 'mov'].includes(ext);
+				const path = isVideo ? 'videos' : 'images';
+				
+				if (isVideo) {
+					return `
+						<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+							<video class="w-full h-full object-cover" preload="metadata">
+								<source src="/${path}/${currentEditPregnancyId}/${photo.filename}#t=0.5" type="video/${ext === 'mov' ? 'quicktime' : 'mp4'}">
+							</video>
+							<div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+								<div class="w-6 h-6 bg-white bg-opacity-90 rounded-full flex items-center justify-center">
+									<svg class="w-3 h-3 text-gray-800" fill="currentColor" viewBox="0 0 20 20">
+										<path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+									</svg>
+								</div>
+							</div>
+						</div>
+					`;
+				} else {
+					return `
+						<div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+							<img src="/${path}/${currentEditPregnancyId}/${photo.filename}" 
+								 alt="${photo.original_filename}"
+								 class="w-full h-full object-cover"
+								 loading="lazy">
+						</div>
+					`;
+				}
+			}).join('');
+		}
+
+		function closeEditUpdateModal() {
+			document.getElementById('editUpdateModal').classList.add('hidden');
+			document.body.style.overflow = '';
+			document.getElementById('editUpdateForm').reset();
+			currentEditUpdateId = null;
+			currentEditPregnancyId = null;
+			document.getElementById('existingMedia').style.display = 'none';
+		}
+
+		async function submitEditUpdate(event) {
+			event.preventDefault();
+			
+			if (!currentEditUpdateId) {
+				showError('No update selected for editing');
+				return;
+			}
+			
+			const form = event.target;
+			const formData = new FormData();
+			
+			// Get current pregnancy week
+			let weekNumber = null;
+			const weekText = document.getElementById('currentWeek').textContent;
+			if (weekText && weekText !== '--') {
+				weekNumber = parseInt(weekText);
+			}
+
+			// Handle custom date - convert to UTC ISO string
+			let updateDate = null;
+			if (form.updateDate.value) {
+				const localDate = new Date(form.updateDate.value + 'T00:00:00');
+				updateDate = localDate.toISOString();
+			}
+
+			// Prepare update data
+			const updateData = {
+				title: form.title.value,
+				content: form.content.value || null,
+				week_number: weekNumber,
+				update_type: form.milestone.value ? 'appointment' : 'general',
+				appointment_type: form.milestone.value || null,
+				is_shared: form.isShared.checked,
+				date: updateDate
+			};
+
+			formData.append('data', JSON.stringify(updateData));
+
+			// Add photos if selected
+			const photoFiles = form.photos.files;
+			for (let i = 0; i < photoFiles.length && i < 5; i++) {
+				formData.append('photos', photoFiles[i]);
+			}
+
+			// Add videos if selected
+			const videoFiles = form.videos.files;
+			for (let i = 0; i < videoFiles.length && i < 3; i++) {
+				formData.append('videos', videoFiles[i]);
+			}
+
+			try {
+				const response = await fetch(`/api/updates/${currentEditUpdateId}`, {
+					method: 'PUT',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					},
+					body: formData
+				});
+
+				if (response.ok) {
+					const update = await response.json();
+					closeEditUpdateModal();
+					// Reload timeline to show updated update
+					loadTimelineEvents();
+					showSuccess('Update saved successfully!');
+				} else {
+					const error = await response.text();
+					showError('Failed to update: ' + error);
+				}
+			} catch (err) {
+				console.error('Error updating:', err);
+				showError('Network error updating');
+			}
+		}
+
+		// Media modal functions
+		function openPhotoModal(imageSrc, originalName) {
+			const modal = document.getElementById('photoModal');
+			const img = document.getElementById('photoModalImage');
+			const caption = document.getElementById('photoModalCaption');
+			
+			img.src = imageSrc;
+			caption.textContent = originalName || 'Photo';
+			modal.classList.remove('hidden');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function openVideoModal(videoSrc, originalName) {
+			const modal = document.getElementById('videoModal');
+			const video = document.getElementById('videoModalVideo');
+			const caption = document.getElementById('videoModalCaption');
+			
+			video.src = videoSrc;
+			caption.textContent = originalName || 'Video';
+			modal.classList.remove('hidden');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function closePhotoModal() {
+			const modal = document.getElementById('photoModal');
+			modal.classList.add('hidden');
+			document.body.style.overflow = '';
+		}
+
+		function closeVideoModal() {
+			const modal = document.getElementById('videoModal');
+			const video = document.getElementById('videoModalVideo');
+			video.pause();
+			video.src = '';
+			modal.classList.add('hidden');
+			document.body.style.overflow = '';
+		}
+
+		// Close modals when clicking outside
+		function handlePhotoModalClick(event) {
+			if (event.target.id === 'photoModal') {
+				closePhotoModal();
+			}
+		}
+
+		function handleVideoModalClick(event) {
+			if (event.target.id === 'videoModal') {
+				closeVideoModal();
+			}
+		}
+	</script>
+
+	<!-- Photo Modal -->
+	<div id="photoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="handlePhotoModalClick(event)">
+		<div class="max-w-4xl max-h-full flex flex-col">
+			<div class="flex justify-between items-center mb-4">
+				<h3 id="photoModalCaption" class="text-white text-lg font-medium"></h3>
+				<button onclick="closePhotoModal()" class="text-white hover:text-gray-300">
+					<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+			<div class="flex-1 flex items-center justify-center">
+				<img id="photoModalImage" class="max-w-full max-h-full object-contain rounded-lg" alt="Photo">
+			</div>
+		</div>
+	</div>
+
+	<!-- Video Modal -->
+	<div id="videoModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="handleVideoModalClick(event)">
+		<div class="max-w-4xl max-h-full flex flex-col">
+			<div class="flex justify-between items-center mb-4">
+				<h3 id="videoModalCaption" class="text-white text-lg font-medium"></h3>
+				<button onclick="closeVideoModal()" class="text-white hover:text-gray-300">
+					<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+			<div class="flex-1 flex items-center justify-center">
+				<video id="videoModalVideo" class="max-w-full max-h-full rounded-lg" controls>
+					Your browser does not support the video tag.
+				</video>
+			</div>
+		</div>
+	</div>
 </body>
 </html>

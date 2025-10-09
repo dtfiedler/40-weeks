@@ -239,3 +239,22 @@ func CreateMilestoneReachedEvent(pregnancyID int, milestoneTitle string, weekNum
 		eventData,
 	)
 }
+
+// CreateUpdateSharedEvent creates an event when a pregnancy update is shared
+func CreateUpdateSharedEvent(pregnancyID int, userID int, updateTitle, updateDescription string, weekNumber *int) error {
+	eventService := NewEventService()
+	
+	eventData := map[string]interface{}{
+		"update_title": updateTitle,
+	}
+
+	return eventService.CreateEvent(
+		pregnancyID,
+		models.EventUpdatePosted,
+		updateTitle,
+		updateDescription,
+		weekNumber,
+		&userID,
+		eventData,
+	)
+}

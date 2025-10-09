@@ -15,6 +15,7 @@ type PregnancyUpdate struct {
 	AppointmentType *string   `json:"appointment_type" db:"appointment_type"`
 	IsShared        bool      `json:"is_shared" db:"is_shared"`
 	SharedAt        *time.Time `json:"shared_at" db:"shared_at"`
+	UpdateDate      *time.Time `json:"update_date" db:"update_date"`
 	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
 	Photos          []UpdatePhoto `json:"photos,omitempty"`
