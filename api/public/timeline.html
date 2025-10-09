@@ -316,12 +316,15 @@
 				return 'Yesterday';
 			} else if (diffDays < 7) {
 				return `${diffDays} days ago`;
-			} else if (diffDays < 30) {
-				const weeks = Math.floor(diffDays / 7);
-				return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
 			} else {
-				// Use user's locale for older dates
-				return date.toLocaleDateString(navigator.language || 'en-US', {
+				// For older dates, show the actual date as posted (treating UTC as the parents' time)
+				// Format as if the UTC time is the local time when they posted
+				const year = date.getUTCFullYear();
+				const month = date.getUTCMonth();
+				const day = date.getUTCDate();
+				const localDate = new Date(year, month, day);
+				
+				return localDate.toLocaleDateString(navigator.language || 'en-US', {
 					year: 'numeric',
 					month: 'short',
 					day: 'numeric'
