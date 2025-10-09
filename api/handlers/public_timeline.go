@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"simple-go/api/db"
 	"simple-go/api/models"
@@ -132,17 +133,47 @@ func getPublicTimelineItems(pregnancyID, limit, offset int) ([]PublicTimelineIte
 	for rows.Next() {
 		var item PublicTimelineItem
 		var createdBy string
+		var updateDateStr string
 		
 		err := rows.Scan(
 			&item.ID,
 			&item.Title,
 			&item.Description,
 			&item.WeekNumber,
-			&item.UpdateDate,
+			&updateDateStr,
 			&createdBy,
 		)
 		if err != nil {
 			continue
+		}
+
+		// Parse the datetime from SQLite and format as ISO string
+		if updateDateStr != "" {
+			// SQLite datetime format is typically "2006-01-02 15:04:05" or "2006-01-02T15:04:05Z"
+			var parsedTime time.Time
+			
+			// Try common SQLite datetime formats
+			formats := []string{
+				time.RFC3339,
+				"2006-01-02 15:04:05",
+				"2006-01-02T15:04:05",
+				"2006-01-02",
+			}
+			
+			for _, format := range formats {
+				if parsed, err := time.Parse(format, updateDateStr); err == nil {
+					parsedTime = parsed
+					break
+				}
+			}
+			
+			// If we couldn't parse it, use the original string
+			if !parsedTime.IsZero() {
+				// Ensure it's UTC and format as ISO string
+				item.UpdateDate = parsedTime.UTC().Format(time.RFC3339)
+			} else {
+				item.UpdateDate = updateDateStr
+			}
 		}
 
 		item.CreatedBy = createdBy

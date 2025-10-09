@@ -191,6 +191,7 @@
 			const div = document.createElement('div');
 			div.className = 'card';
 			
+			// Parse the ISO date string (server sends proper UTC ISO format)
 			const updateDate = new Date(update.update_date);
 			const timeAgo = getTimeAgo(updateDate);
 			
@@ -319,7 +320,12 @@
 				const weeks = Math.floor(diffDays / 7);
 				return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
 			} else {
-				return date.toLocaleDateString();
+				// Use user's locale for older dates
+				return date.toLocaleDateString(navigator.language || 'en-US', {
+					year: 'numeric',
+					month: 'short',
+					day: 'numeric'
+				});
 			}
 		}
 
