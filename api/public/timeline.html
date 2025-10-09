@@ -295,7 +295,9 @@
 
 		// Utility functions
 		function formatDate(dateString) {
-			const date = new Date(dateString);
+			// Parse YYYY-MM-DD as local date to avoid timezone conversion issues
+			const parts = dateString.split('-');
+			const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
 			return date.toLocaleDateString('en-US', { 
 				year: 'numeric', 
 				month: 'long', 
