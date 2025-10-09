@@ -22,7 +22,6 @@ import (
 type CreateUpdateRequest struct {
 	Title           string  `json:"title"`
 	Content         *string `json:"content"`
-	WeekNumber      *int    `json:"week_number"`
 	UpdateType      string  `json:"update_type"`
 	AppointmentType *string `json:"appointment_type"`
 	IsShared        bool    `json:"is_shared"`
@@ -47,11 +46,12 @@ func CreateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Get pregnancy for the user
 	var pregnancyID int
+	var conceptionDate *time.Time
 	err = db.GetDB().QueryRow(`
-		SELECT id FROM pregnancies 
+		SELECT id, conception_date FROM pregnancies 
 		WHERE user_id = ? AND is_active = TRUE
 		ORDER BY created_at DESC LIMIT 1`,
-		userID).Scan(&pregnancyID)
+		userID).Scan(&pregnancyID, &conceptionDate)
 	if err != nil {
 		http.Error(w, "No active pregnancy found", http.StatusNotFound)
 		return
@@ -86,11 +86,22 @@ func CreateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		updateDate = time.Now().UTC()
 	}
 
+	// Calculate week number based on conception date
+	var weekNumber *int
+	if conceptionDate != nil {
+		// Calculate weeks since conception (same logic as Pregnancy.GetCurrentWeek())
+		daysSinceConception := int(updateDate.Sub(*conceptionDate).Hours() / 24)
+		calculatedWeek := daysSinceConception/7 + 1
+		if calculatedWeek > 0 {
+			weekNumber = &calculatedWeek
+		}
+	}
+
 	// Insert the update
 	result, err := db.GetDB().Exec(`
 		INSERT INTO pregnancy_updates (pregnancy_id, week_number, title, content, update_type, appointment_type, is_shared, shared_at, update_date)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		pregnancyID, req.WeekNumber, req.Title, req.Content, req.UpdateType, req.AppointmentType, req.IsShared,
+		pregnancyID, weekNumber, req.Title, req.Content, req.UpdateType, req.AppointmentType, req.IsShared,
 		func() *time.Time {
 			if req.IsShared {
 				now := time.Now()
@@ -225,7 +236,7 @@ func CreateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 				eventDescription = *req.Content
 			}
 
-			CreateUpdateSharedEvent(pregnancyID, userID, eventTitle, eventDescription, req.WeekNumber)
+			CreateUpdateSharedEvent(pregnancyID, userID, eventTitle, eventDescription, weekNumber)
 		}
 	}
 
@@ -503,14 +514,15 @@ func UpdateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify ownership
+	// Verify ownership and get conception date
 	var pregnancyID int
+	var conceptionDate *time.Time
 	err = db.GetDB().QueryRow(`
-		SELECT p.id
+		SELECT p.id, p.conception_date
 		FROM pregnancy_updates pu
 		JOIN pregnancies p ON p.id = pu.pregnancy_id
 		WHERE pu.id = ? AND p.user_id = ?`,
-		updateID, userID).Scan(&pregnancyID)
+		updateID, userID).Scan(&pregnancyID, &conceptionDate)
 	
 	if err == sql.ErrNoRows {
 		http.Error(w, "Update not found or access denied", http.StatusNotFound)
@@ -534,13 +546,24 @@ func UpdateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		updateDate = time.Now().UTC()
 	}
 
+	// Calculate week number based on conception date
+	var weekNumber *int
+	if conceptionDate != nil {
+		// Calculate weeks since conception (same logic as Pregnancy.GetCurrentWeek())
+		daysSinceConception := int(updateDate.Sub(*conceptionDate).Hours() / 24)
+		calculatedWeek := daysSinceConception/7 + 1
+		if calculatedWeek > 0 {
+			weekNumber = &calculatedWeek
+		}
+	}
+
 	// Update the existing update
 	_, err = db.GetDB().Exec(`
 		UPDATE pregnancy_updates 
 		SET week_number = ?, title = ?, content = ?, update_type = ?, appointment_type = ?, 
 		    is_shared = ?, shared_at = ?, update_date = ?, updated_at = ?
 		WHERE id = ?`,
-		req.WeekNumber, req.Title, req.Content, req.UpdateType, req.AppointmentType, req.IsShared,
+		weekNumber, req.Title, req.Content, req.UpdateType, req.AppointmentType, req.IsShared,
 		func() *time.Time {
 			if req.IsShared {
 				now := time.Now()
