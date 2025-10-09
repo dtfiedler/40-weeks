@@ -31,13 +31,16 @@ type PregnancyWithUser struct {
 func (p *Pregnancy) GetCurrentWeek() int {
 	now := time.Now()
 	
-	// If we have conception date, calculate from that
+	// If we have conception date, calculate gestational weeks from LMP (conception + 14 days)
 	if p.ConceptionDate != nil {
-		weeks := int(now.Sub(*p.ConceptionDate).Hours() / 24 / 7)
+		daysSinceConception := int(now.Sub(*p.ConceptionDate).Hours() / 24)
+		// Add 14 days to account for LMP offset (gestational age calculation)
+		weeks := (daysSinceConception + 14) / 7
 		return weeks + 1 // Pregnancy weeks start at 1
 	}
 	
-	// Otherwise calculate from due date (40 weeks back)
+	// Otherwise calculate from due date (40 weeks back from LMP perspective)
+	// Due date is calculated from LMP, so we can use it directly
 	conceptionEstimate := p.DueDate.AddDate(0, 0, -280) // 40 weeks = 280 days
 	weeks := int(now.Sub(conceptionEstimate).Hours() / 24 / 7)
 	return weeks + 1

@@ -89,9 +89,10 @@ func CreateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// Calculate week number based on conception date
 	var weekNumber *int
 	if conceptionDate != nil {
-		// Calculate weeks since conception (same logic as Pregnancy.GetCurrentWeek())
+		// Calculate gestational weeks from LMP (conception + 14 days)
 		daysSinceConception := int(updateDate.Sub(*conceptionDate).Hours() / 24)
-		calculatedWeek := daysSinceConception/7 + 1
+		// Add 14 days to account for LMP offset (gestational age calculation)
+		calculatedWeek := (daysSinceConception+14)/7 + 1
 		if calculatedWeek > 0 {
 			weekNumber = &calculatedWeek
 		}
@@ -549,9 +550,10 @@ func UpdateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// Calculate week number based on conception date
 	var weekNumber *int
 	if conceptionDate != nil {
-		// Calculate weeks since conception (same logic as Pregnancy.GetCurrentWeek())
+		// Calculate gestational weeks from LMP (conception + 14 days)
 		daysSinceConception := int(updateDate.Sub(*conceptionDate).Hours() / 24)
-		calculatedWeek := daysSinceConception/7 + 1
+		// Add 14 days to account for LMP offset (gestational age calculation)
+		calculatedWeek := (daysSinceConception+14)/7 + 1
 		if calculatedWeek > 0 {
 			weekNumber = &calculatedWeek
 		}
