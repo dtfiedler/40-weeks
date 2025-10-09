@@ -189,3 +189,9 @@ This unified approach provides:
 - **Performance**: No network latency between frontend and backend
 - **Security**: Templates served securely with CSRF protection
 - **Development Speed**: No build steps for frontend, immediate feedback
+
+## Marketing Notes
+
+### Tagline Options
+- Current: "Share Your Pregnancy Journey" 
+- Alternative to test: "From Bump to Book" - emphasizes the complete journey from pregnancy tracking to physical keepsake
