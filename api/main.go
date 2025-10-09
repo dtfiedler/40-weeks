@@ -214,7 +214,7 @@ func timelinePageHandler(w http.ResponseWriter, r *http.Request) {
 	dueDate := pregnancy.DueDate.Format("January 2, 2006")
 	
 	// Generate dynamic meta tags (escape HTML to prevent XSS)
-	title := html.EscapeString(fmt.Sprintf("View %s's journey!", parentNames))
+	title := html.EscapeString(fmt.Sprintf("Follow %s's journey!", parentNames))
 	description := html.EscapeString(fmt.Sprintf("Follow %s's pregnancy journey. Currently at week %d, due %s", parentNames, currentWeek, dueDate))
 	
 	// Read the HTML template
