@@ -388,6 +388,9 @@ func CreatePregnancy(userID int, dueDate time.Time, partnerName, partnerEmail, b
 		babyName = &defaultName
 	}
 
+	// Calculate conception date (approximately 266 days or 38 weeks before due date)
+	conceptionDate := dueDate.AddDate(0, 0, -266)
+
 	// Generate unique share ID
 	shareID, err := generateShareID()
 	if err != nil {
@@ -395,13 +398,13 @@ func CreatePregnancy(userID int, dueDate time.Time, partnerName, partnerEmail, b
 	}
 
 	query := `
-		INSERT INTO pregnancies (user_id, due_date, partner_name, partner_email, baby_name, share_id)
-		VALUES (?, ?, ?, ?, ?, ?)
+		INSERT INTO pregnancies (user_id, due_date, conception_date, partner_name, partner_email, baby_name, share_id)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 		RETURNING id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
 	`
 
 	var pregnancy models.Pregnancy
-	err = db.GetDB().QueryRow(query, userID, dueDate, partnerName, partnerEmail, babyName, shareID).Scan(
+	err = db.GetDB().QueryRow(query, userID, dueDate, conceptionDate, partnerName, partnerEmail, babyName, shareID).Scan(
 		&pregnancy.ID,
 		&pregnancy.UserID,
 		&pregnancy.PartnerName,
@@ -443,15 +446,18 @@ func UpdatePregnancy(pregnancyID int, dueDate time.Time, partnerName, partnerEma
 		babyName = &defaultName
 	}
 
+	// Calculate conception date (approximately 266 days or 38 weeks before due date)
+	conceptionDate := dueDate.AddDate(0, 0, -266)
+
 	query := `
 		UPDATE pregnancies 
-		SET due_date = ?, partner_name = ?, partner_email = ?, baby_name = ?, updated_at = CURRENT_TIMESTAMP
+		SET due_date = ?, conception_date = ?, partner_name = ?, partner_email = ?, baby_name = ?, updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 		RETURNING id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
 	`
 
 	var pregnancy models.Pregnancy
-	err := db.GetDB().QueryRow(query, dueDate, partnerName, partnerEmail, babyName, pregnancyID).Scan(
+	err := db.GetDB().QueryRow(query, dueDate, conceptionDate, partnerName, partnerEmail, babyName, pregnancyID).Scan(
 		&pregnancy.ID,
 		&pregnancy.UserID,
 		&pregnancy.PartnerName,
