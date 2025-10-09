@@ -95,6 +95,7 @@ func getCombinedTimelineItems(pregnancyID, limit, offset int) ([]TimelineItem, e
 		NULL as update_type,
 		NULL as is_shared,
 		pe.week_number,
+		pe.created_at as sort_date,
 		pe.created_at,
 		u.name as created_by
 	FROM pregnancy_events pe
@@ -112,6 +113,7 @@ func getCombinedTimelineItems(pregnancyID, limit, offset int) ([]TimelineItem, e
 		pu.update_type,
 		pu.is_shared,
 		pu.week_number,
+		COALESCE(pu.update_date, pu.created_at) as sort_date,
 		COALESCE(pu.update_date, pu.created_at) as created_at,
 		u.name as created_by
 	FROM pregnancy_updates pu
@@ -119,7 +121,7 @@ func getCombinedTimelineItems(pregnancyID, limit, offset int) ([]TimelineItem, e
 	JOIN users u ON u.id = p.user_id
 	WHERE pu.pregnancy_id = ?
 	
-	ORDER BY created_at DESC, item_id DESC
+	ORDER BY sort_date DESC, item_id DESC
 	LIMIT ? OFFSET ?`
 
 	rows, err := db.GetDB().Query(query, pregnancyID, pregnancyID, limit, offset)
@@ -134,6 +136,7 @@ func getCombinedTimelineItems(pregnancyID, limit, offset int) ([]TimelineItem, e
 		var eventType, updateType *string
 		var isShared *bool
 		var createdBy *string
+		var sortDate string  // We don't need to store this, just scan it
 		
 		var itemID int
 		err := rows.Scan(
@@ -145,7 +148,8 @@ func getCombinedTimelineItems(pregnancyID, limit, offset int) ([]TimelineItem, e
 			&updateType,
 			&isShared,
 			&item.WeekNumber,
-			&item.CreatedAt,
+			&sortDate,        // Sort date (we scan but don't use)
+			&item.CreatedAt,  // Actual created_at for display
 			&createdBy,
 		)
 		if err != nil {
