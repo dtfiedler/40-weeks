@@ -4,6 +4,14 @@
 	<title>Pregnancy Timeline - 40Weeks</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="Follow the pregnancy journey">
+	
+	<!-- Dynamic meta tags (will be updated by JavaScript) -->
+	<meta property="og:title" content="Pregnancy Timeline - 40Weeks">
+	<meta property="og:description" content="Follow the pregnancy journey">
+	<meta property="og:type" content="website">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="Pregnancy Timeline - 40Weeks">
+	<meta name="twitter:description" content="Follow the pregnancy journey">
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script>
 		tailwind.config = {
@@ -140,9 +148,20 @@
 		}
 
 		function updatePregnancyInfo(pregnancy) {
+			const title = `View ${pregnancy.parent_names}'s journey!`;
+			const description = `Follow ${pregnancy.parent_names}'s pregnancy journey. Currently at week ${pregnancy.current_week}, due ${formatDate(pregnancy.due_date)}`;
+			
+			// Update page content
 			document.getElementById('pregnancyTitle').textContent = `${pregnancy.parent_names}'s Journey`;
 			document.getElementById('pregnancySubtitle').textContent = `Week ${pregnancy.current_week} • Due ${formatDate(pregnancy.due_date)}`;
-			document.title = `${pregnancy.parent_names}'s Journey - 40Weeks`;
+			
+			// Update page title and meta tags
+			document.title = title;
+			document.querySelector('meta[name="description"]').setAttribute('content', description);
+			document.querySelector('meta[property="og:title"]').setAttribute('content', title);
+			document.querySelector('meta[property="og:description"]').setAttribute('content', description);
+			document.querySelector('meta[name="twitter:title"]').setAttribute('content', title);
+			document.querySelector('meta[name="twitter:description"]').setAttribute('content', description);
 		}
 
 		function displayUpdates(updates, append = false) {

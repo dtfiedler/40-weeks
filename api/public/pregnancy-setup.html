@@ -317,8 +317,19 @@
 			e.preventDefault();
 			
 			const formData = new FormData(e.target);
+			
+			// Convert due date to UTC to ensure consistent storage across timezones
+			const dueDateValue = formData.get('dueDate');
+			let dueDateUTC = null;
+			if (dueDateValue) {
+				// Create date in local timezone at noon to avoid timezone boundary issues
+				const localDate = new Date(dueDateValue + 'T12:00:00');
+				// Convert to UTC ISO string
+				dueDateUTC = localDate.toISOString().split('T')[0]; // Get just the date part
+			}
+			
 			const data = {
-				due_date: formData.get('dueDate'),
+				due_date: dueDateUTC,
 				partner_name: formData.get('partnerName') || null,
 				partner_email: formData.get('partnerEmail') || null,
 				baby_name: formData.get('babyName') || null
