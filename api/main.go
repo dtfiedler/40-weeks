@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -188,15 +190,52 @@ func timelinePageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// Verify the pregnancy exists (optional - could just serve the page and let JS handle errors)
-	_, err := handlers.GetPregnancyByShareID(shareID)
+	// Fetch pregnancy data for meta tags
+	pregnancy, err := handlers.GetPregnancyByShareID(shareID)
 	if err != nil {
 		http.Error(w, "Timeline not found", http.StatusNotFound)
 		return
 	}
 	
-	// Serve the timeline page
-	http.ServeFile(w, r, "public/timeline.html")
+	// Get parent names for meta tags
+	var userName string
+	err = db.GetDB().QueryRow(`SELECT name FROM users WHERE id = ?`, pregnancy.UserID).Scan(&userName)
+	if err != nil {
+		log.Printf("Failed to get user name: %v", err)
+		userName = "Parent"
+	}
+
+	parentNames := userName
+	if pregnancy.PartnerName != nil && *pregnancy.PartnerName != "" {
+		parentNames = parentNames + " & " + *pregnancy.PartnerName
+	}
+	
+	currentWeek := pregnancy.GetCurrentWeek()
+	dueDate := pregnancy.DueDate.Format("January 2, 2006")
+	
+	// Generate dynamic meta tags (escape HTML to prevent XSS)
+	title := html.EscapeString(fmt.Sprintf("View %s's journey!", parentNames))
+	description := html.EscapeString(fmt.Sprintf("Follow %s's pregnancy journey. Currently at week %d, due %s", parentNames, currentWeek, dueDate))
+	
+	// Read the HTML template
+	htmlContent, err := os.ReadFile("public/timeline.html")
+	if err != nil {
+		http.Error(w, "Unable to load page", http.StatusInternalServerError)
+		return
+	}
+	
+	// Replace placeholders with actual data
+	htmlStr := string(htmlContent)
+	htmlStr = strings.ReplaceAll(htmlStr, `<title>Pregnancy Timeline - 40Weeks</title>`, fmt.Sprintf(`<title>%s</title>`, title))
+	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="description" content="Follow the pregnancy journey">`, fmt.Sprintf(`<meta name="description" content="%s">`, description))
+	htmlStr = strings.ReplaceAll(htmlStr, `<meta property="og:title" content="Pregnancy Timeline - 40Weeks">`, fmt.Sprintf(`<meta property="og:title" content="%s">`, title))
+	htmlStr = strings.ReplaceAll(htmlStr, `<meta property="og:description" content="Follow the pregnancy journey">`, fmt.Sprintf(`<meta property="og:description" content="%s">`, description))
+	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="twitter:title" content="Pregnancy Timeline - 40Weeks">`, fmt.Sprintf(`<meta name="twitter:title" content="%s">`, title))
+	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="twitter:description" content="Follow the pregnancy journey">`, fmt.Sprintf(`<meta name="twitter:description" content="%s">`, description))
+	
+	// Set content type and write response
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(htmlStr))
 }
 
 // updateHandler routes update requests
