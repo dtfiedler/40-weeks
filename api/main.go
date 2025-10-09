@@ -62,6 +62,7 @@ func setupRoutes() {
 	http.HandleFunc("/timeline/", handlers.PublicTimelineHandler)
 	http.HandleFunc("/api/updates", middleware.AuthMiddleware(updateHandler))
 	http.HandleFunc("/api/updates/", middleware.AuthMiddleware(updateDetailHandler))
+	http.HandleFunc("/api/cover-photo", middleware.AuthMiddleware(coverPhotoHandler))
 	http.HandleFunc("/images/", imageHandler)
 	http.HandleFunc("/videos/", videoHandler)
 	http.HandleFunc("/app", routes.AppPageHandler)
@@ -225,6 +226,12 @@ func timelinePageHandler(w http.ResponseWriter, r *http.Request) {
 	title := html.EscapeString(fmt.Sprintf("Follow %s's journey!", parentNames))
 	description := html.EscapeString(fmt.Sprintf("Follow %s's pregnancy journey. Currently at week %d, due %s", parentNames, currentWeek, dueDate))
 	
+	// Generate cover photo URL
+	coverPhotoURL := ""
+	if pregnancy.CoverPhotoFilename != nil && *pregnancy.CoverPhotoFilename != "" {
+		coverPhotoURL = fmt.Sprintf("/images/covers/%s", *pregnancy.CoverPhotoFilename)
+	}
+	
 	// Read the HTML template
 	htmlContent, err := os.ReadFile("public/timeline.html")
 	if err != nil {
@@ -240,6 +247,19 @@ func timelinePageHandler(w http.ResponseWriter, r *http.Request) {
 	htmlStr = strings.ReplaceAll(htmlStr, `<meta property="og:description" content="Follow the pregnancy journey">`, fmt.Sprintf(`<meta property="og:description" content="%s">`, description))
 	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="twitter:title" content="Pregnancy Timeline - 40Weeks">`, fmt.Sprintf(`<meta name="twitter:title" content="%s">`, title))
 	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="twitter:description" content="Follow the pregnancy journey">`, fmt.Sprintf(`<meta name="twitter:description" content="%s">`, description))
+	
+	// Add cover photo meta tags if available
+	if coverPhotoURL != "" {
+		// Insert image meta tags after the existing meta tags
+		imageMetaTags := fmt.Sprintf(`
+	<meta property="og:image" content="%s">
+	<meta property="og:image:width" content="1200">
+	<meta property="og:image:height" content="630">
+	<meta name="twitter:image" content="%s">`, coverPhotoURL, coverPhotoURL)
+		
+		htmlStr = strings.ReplaceAll(htmlStr, `<meta name="twitter:description" content="`+description+`">`, 
+			fmt.Sprintf(`<meta name="twitter:description" content="%s">%s`, description, imageMetaTags))
+	}
 	
 	// Set content type and write response
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -263,6 +283,18 @@ func updateDetailHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "PUT":
 		handlers.UpdateUpdateHandler(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// coverPhotoHandler routes cover photo requests
+func coverPhotoHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		handlers.UploadCoverPhotoHandler(w, r)
+	case http.MethodDelete:
+		handlers.DeleteCoverPhotoHandler(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

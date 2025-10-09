@@ -228,7 +228,61 @@
 						</div>
 					</div>
 
-					<div class="flex items-center space-x-3 pt-4">
+					<!-- Cover Photo Section -->
+					<div class="border-t border-gray-200 pt-6">
+						<h3 class="text-lg font-medium text-gray-900 mb-4">Timeline Cover Photo</h3>
+						<p class="text-sm text-gray-600 mb-4">
+							This photo will be shown when your timeline is shared on social media. Choose your favorite pregnancy photo!
+						</p>
+						
+						<div id="coverPhotoSection">
+							<div id="noCoverPhoto" class="text-center p-6 border-2 border-dashed border-gray-300 rounded-lg">
+								<svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+									<path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+								<p class="mt-2 text-sm text-gray-600">No cover photo set</p>
+								<input type="file" id="coverPhotoInput" accept="image/*" class="hidden">
+								<button type="button" onclick="document.getElementById('coverPhotoInput').click()" 
+										class="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+									Choose Cover Photo
+								</button>
+							</div>
+							
+							<div id="hasCoverPhoto" class="hidden">
+								<div class="flex items-start space-x-4">
+									<img id="coverPhotoPreview" src="" alt="Cover photo" class="w-32 h-20 object-cover rounded-lg">
+									<div class="flex-1">
+										<p class="text-sm text-gray-600 mb-2">Current cover photo</p>
+										<div class="flex space-x-2">
+											<input type="file" id="coverPhotoInputReplace" accept="image/*" class="hidden">
+											<button type="button" onclick="document.getElementById('coverPhotoInputReplace').click()" 
+													class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+												Change Photo
+											</button>
+											<button type="button" onclick="deleteCoverPhoto()" 
+													class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+												Remove
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<div id="uploadProgress" class="hidden mt-4">
+								<div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+									<div class="flex items-center">
+										<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+											<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+											<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+										</svg>
+										<span class="text-blue-800">Uploading cover photo...</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="flex items-center space-x-3 pt-6">
 						<button type="submit" class="btn-primary">
 							Save Changes
 						</button>
@@ -318,6 +372,7 @@
 					console.log('API response data:', data);
 					populateForm(data);
 					updatePregnancyOverview(data, data.current_week_calculated);
+					updateCoverPhotoDisplay(data);
 					
 					// Store original data for cancel functionality
 					originalData = { ...data };
@@ -510,6 +565,92 @@
 			successDiv.classList.remove('hidden');
 			setTimeout(() => successDiv.classList.add('hidden'), 3000);
 		}
+
+		// Cover photo management
+		function updateCoverPhotoDisplay(pregnancy) {
+			const noCoverPhoto = document.getElementById('noCoverPhoto');
+			const hasCoverPhoto = document.getElementById('hasCoverPhoto');
+			const coverPhotoPreview = document.getElementById('coverPhotoPreview');
+			
+			if (pregnancy.cover_photo_filename) {
+				noCoverPhoto.classList.add('hidden');
+				hasCoverPhoto.classList.remove('hidden');
+				coverPhotoPreview.src = `/images/covers/${pregnancy.cover_photo_filename}`;
+			} else {
+				noCoverPhoto.classList.remove('hidden');
+				hasCoverPhoto.classList.add('hidden');
+			}
+		}
+
+		async function uploadCoverPhoto(file) {
+			const formData = new FormData();
+			formData.append('cover_photo', file);
+			
+			// Show progress
+			document.getElementById('uploadProgress').classList.remove('hidden');
+			
+			try {
+				const response = await fetch('/api/cover-photo', {
+					method: 'POST',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					},
+					body: formData
+				});
+				
+				if (response.ok) {
+					showSuccess('Cover photo uploaded successfully!');
+					loadPregnancyData(); // Reload to show new photo
+				} else {
+					const errorText = await response.text();
+					showError(errorText || 'Failed to upload cover photo');
+				}
+			} catch (error) {
+				showError('Network error uploading cover photo');
+			} finally {
+				document.getElementById('uploadProgress').classList.add('hidden');
+			}
+		}
+
+		async function deleteCoverPhoto() {
+			if (!confirm('Are you sure you want to remove the cover photo?')) {
+				return;
+			}
+			
+			try {
+				const response = await fetch('/api/cover-photo', {
+					method: 'DELETE',
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					showSuccess('Cover photo removed successfully!');
+					loadPregnancyData(); // Reload to update display
+				} else {
+					const errorText = await response.text();
+					showError(errorText || 'Failed to remove cover photo');
+				}
+			} catch (error) {
+				showError('Network error removing cover photo');
+			}
+		}
+
+		// Set up file input event listeners
+		document.getElementById('coverPhotoInput').addEventListener('change', function(e) {
+			const file = e.target.files[0];
+			if (file) {
+				uploadCoverPhoto(file);
+			}
+		});
+
+		document.getElementById('coverPhotoInputReplace').addEventListener('change', function(e) {
+			const file = e.target.files[0];
+			if (file) {
+				uploadCoverPhoto(file);
+			}
+		});
 
 		// Load data when page loads
 		loadPregnancyData();

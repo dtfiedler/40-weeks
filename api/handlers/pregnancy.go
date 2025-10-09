@@ -475,7 +475,7 @@ func UpdatePregnancy(pregnancyID int, dueDate time.Time, partnerName, partnerEma
 
 func GetActivePregnancyByUserID(userID int) (*models.Pregnancy, error) {
 	query := `
-		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
+		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, cover_photo_filename, created_at, updated_at
 		FROM pregnancies 
 		WHERE user_id = ? AND is_active = TRUE
 		ORDER BY created_at DESC
@@ -494,6 +494,7 @@ func GetActivePregnancyByUserID(userID int) (*models.Pregnancy, error) {
 		&pregnancy.BabyName,
 		&pregnancy.IsActive,
 		&pregnancy.ShareID,
+		&pregnancy.CoverPhotoFilename,
 		&pregnancy.CreatedAt,
 		&pregnancy.UpdatedAt,
 	)
@@ -604,7 +605,7 @@ func intPtr(i int) *int {
 
 func GetPregnancyByShareID(shareID string) (*models.Pregnancy, error) {
 	query := `
-		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, created_at, updated_at
+		SELECT id, user_id, partner_name, partner_email, due_date, conception_date, current_week, baby_name, is_active, share_id, cover_photo_filename, created_at, updated_at
 		FROM pregnancies 
 		WHERE share_id = ? AND is_active = TRUE
 		LIMIT 1
@@ -622,6 +623,7 @@ func GetPregnancyByShareID(shareID string) (*models.Pregnancy, error) {
 		&pregnancy.BabyName,
 		&pregnancy.IsActive,
 		&pregnancy.ShareID,
+		&pregnancy.CoverPhotoFilename,
 		&pregnancy.CreatedAt,
 		&pregnancy.UpdatedAt,
 	)

@@ -5,18 +5,19 @@ import (
 )
 
 type Pregnancy struct {
-	ID             int       `json:"id" db:"id"`
-	UserID         int       `json:"user_id" db:"user_id"`
-	PartnerName    *string   `json:"partner_name" db:"partner_name"`
-	PartnerEmail   *string   `json:"partner_email" db:"partner_email"`
-	DueDate        time.Time `json:"due_date" db:"due_date"`
-	ConceptionDate *time.Time `json:"conception_date" db:"conception_date"`
-	CurrentWeek    int       `json:"current_week" db:"current_week"`
-	BabyName       *string   `json:"baby_name" db:"baby_name"`
-	IsActive       bool      `json:"is_active" db:"is_active"`
-	ShareID        string    `json:"share_id" db:"share_id"`
-	CreatedAt      time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at" db:"updated_at"`
+	ID                 int       `json:"id" db:"id"`
+	UserID             int       `json:"user_id" db:"user_id"`
+	PartnerName        *string   `json:"partner_name" db:"partner_name"`
+	PartnerEmail       *string   `json:"partner_email" db:"partner_email"`
+	DueDate            time.Time `json:"due_date" db:"due_date"`
+	ConceptionDate     *time.Time `json:"conception_date" db:"conception_date"`
+	CurrentWeek        int       `json:"current_week" db:"current_week"`
+	BabyName           *string   `json:"baby_name" db:"baby_name"`
+	IsActive           bool      `json:"is_active" db:"is_active"`
+	ShareID            string    `json:"share_id" db:"share_id"`
+	CoverPhotoFilename *string   `json:"cover_photo_filename" db:"cover_photo_filename"`
+	CreatedAt          time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at" db:"updated_at"`
 }
 
 // PregnancyWithUser includes user information
