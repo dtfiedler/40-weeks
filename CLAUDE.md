@@ -174,6 +174,8 @@ This application uses a **unified architecture** where one Go service handles bo
 - `JWT_SECRET`: JWT signing key (default: "your-secret-key-change-this")
 - `PORT`: Server port (default: "8080")
 - `DATABASE_URL`: SQLite database file path (default: "./data/sqlite/core.db")
+- `IMAGES_DIRECTORY`: Directory for uploaded images (default: "./data/images")
+- `VIDEOS_DIRECTORY`: Directory for uploaded videos (default: "./data/videos")
 
 ### Development Workflow
 1. Make changes to Go code in `api/` directory

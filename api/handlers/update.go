@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"simple-go/api/config"
 	"simple-go/api/db"
 	"simple-go/api/middleware"
 	"simple-go/api/models"
@@ -111,7 +112,7 @@ func CreateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Handle photo uploads
 	files := r.MultipartForm.File["photos"]
-	photoDir := filepath.Join("data", "images", fmt.Sprintf("%d", pregnancyID))
+	photoDir := filepath.Join(config.AppConfig.ImagesDirectory, fmt.Sprintf("%d", pregnancyID))
 
 	// Create photo directory if it doesn't exist
 	if len(files) > 0 {
@@ -160,7 +161,7 @@ func CreateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Handle video uploads
 	videoFiles := r.MultipartForm.File["videos"]
-	videoDir := filepath.Join("data", "videos", fmt.Sprintf("%d", pregnancyID))
+	videoDir := filepath.Join(config.AppConfig.VideosDirectory, fmt.Sprintf("%d", pregnancyID))
 
 	// Create video directory if it doesn't exist
 	if len(videoFiles) > 0 {
@@ -556,7 +557,7 @@ func UpdateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle new photo uploads (append to existing photos)
 	files := r.MultipartForm.File["photos"]
 	if len(files) > 0 {
-		photoDir := filepath.Join("data", "images", fmt.Sprintf("%d", pregnancyID))
+		photoDir := filepath.Join(config.AppConfig.ImagesDirectory, fmt.Sprintf("%d", pregnancyID))
 		
 		// Create photo directory if it doesn't exist
 		if err := os.MkdirAll(photoDir, 0755); err != nil {
@@ -608,7 +609,7 @@ func UpdateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// Handle new video uploads (append to existing videos)
 	videoFiles := r.MultipartForm.File["videos"]
 	if len(videoFiles) > 0 {
-		videoDir := filepath.Join("data", "videos", fmt.Sprintf("%d", pregnancyID))
+		videoDir := filepath.Join(config.AppConfig.VideosDirectory, fmt.Sprintf("%d", pregnancyID))
 		
 		// Create video directory if it doesn't exist
 		if err := os.MkdirAll(videoDir, 0755); err != nil {

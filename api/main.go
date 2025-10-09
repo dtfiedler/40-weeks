@@ -122,7 +122,7 @@ func villageMemberHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// imageHandler serves images from the data/images directory
+// imageHandler serves images from the configured images directory
 func imageHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the image path from URL
 	imagePath := strings.TrimPrefix(r.URL.Path, "/images/")
@@ -132,11 +132,11 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Construct full file path
-	fullPath := filepath.Join("data", "images", imagePath)
+	fullPath := filepath.Join(config.AppConfig.ImagesDirectory, imagePath)
 
-	// Security check - ensure path doesn't escape data/images directory
+	// Security check - ensure path doesn't escape images directory
 	cleanPath := filepath.Clean(fullPath)
-	if !strings.HasPrefix(cleanPath, filepath.Join("data", "images")) {
+	if !strings.HasPrefix(cleanPath, config.AppConfig.ImagesDirectory) {
 		http.Error(w, "Invalid image path", http.StatusBadRequest)
 		return
 	}
@@ -145,7 +145,7 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, fullPath)
 }
 
-// videoHandler serves videos from the data/videos directory
+// videoHandler serves videos from the configured videos directory
 func videoHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the video path from URL
 	videoPath := strings.TrimPrefix(r.URL.Path, "/videos/")
@@ -155,11 +155,11 @@ func videoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Construct full file path
-	fullPath := filepath.Join("data", "videos", videoPath)
+	fullPath := filepath.Join(config.AppConfig.VideosDirectory, videoPath)
 
-	// Security check - ensure path doesn't escape data/videos directory
+	// Security check - ensure path doesn't escape videos directory
 	cleanPath := filepath.Clean(fullPath)
-	if !strings.HasPrefix(cleanPath, filepath.Join("data", "videos")) {
+	if !strings.HasPrefix(cleanPath, config.AppConfig.VideosDirectory) {
 		http.Error(w, "Invalid video path", http.StatusBadRequest)
 		return
 	}
