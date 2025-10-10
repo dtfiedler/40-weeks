@@ -9,6 +9,14 @@ services:
       - DATABASE_URL=${DATABASE_URL:-/data/sqlite/core.db}
       - IMAGES_DIRECTORY=${IMAGES_DIRECTORY:-/data/images}
       - VIDEOS_DIRECTORY=${VIDEOS_DIRECTORY:-/data/videos}
+      # Email configuration
+      - EMAIL_ENABLED=${EMAIL_ENABLED:-false}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - SENDER_EMAIL=${SENDER_EMAIL:-noreply@40weeks.xyz}
+      - SENDER_NAME=${SENDER_NAME:-40Weeks}
+      - BASE_URL=${BASE_URL:-https://40weeks.xyz}
     volumes:
       - ./data:/data
     restart: unless-stopped

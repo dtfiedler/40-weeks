@@ -176,6 +176,12 @@ This application uses a **unified architecture** where one Go service handles bo
 - `DATABASE_URL`: SQLite database file path (default: "./data/sqlite/core.db")
 - `IMAGES_DIRECTORY`: Directory for uploaded images (default: "./data/images")
 - `VIDEOS_DIRECTORY`: Directory for uploaded videos (default: "./data/videos")
+- `EMAIL_ENABLED`: Enable email notifications (default: false)
+- `AWS_REGION`: AWS region for SES (default: "us-east-1")
+- `AWS_ACCESS_KEY_ID`: AWS access key for SES
+- `AWS_SECRET_ACCESS_KEY`: AWS secret key for SES
+- `SENDER_EMAIL`: From email address (default: "noreply@40weeks.app")
+- `SENDER_NAME`: From name (default: "40Weeks")
 
 ### Development Workflow
 1. Make changes to Go code in `api/` directory
@@ -189,6 +195,39 @@ This unified approach provides:
 - **Performance**: No network latency between frontend and backend
 - **Security**: Templates served securely with CSRF protection
 - **Development Speed**: No build steps for frontend, immediate feedback
+
+## Email Notification System
+
+The application includes a comprehensive email notification system powered by AWS SES:
+
+### Features
+- **Automatic notifications** for pregnancy updates and milestones
+- **Welcome emails** for new village members  
+- **Professional HTML templates** with responsive design
+- **Delivery tracking** and email analytics
+- **Background processing** to avoid blocking API responses
+
+### Email Types
+- **Update notifications**: Sent when new pregnancy updates are posted
+- **Milestone notifications**: Celebrate pregnancy milestones
+- **Welcome emails**: Onboard new village members
+- **Test emails**: Verify configuration
+
+### API Endpoints
+- `GET /api/email/config-test` - Test SES configuration
+- `POST /api/email/test` - Send test email
+- `GET /api/email/notifications` - Get notification history
+- `GET /api/email/statistics` - Email delivery statistics
+- `POST /api/email/send-update` - Manual update notification
+
+### Setup Requirements
+1. AWS SES account with verified sender domain/email
+2. AWS credentials with SES send permissions
+3. Environment variables configured (see above)
+4. Set `EMAIL_ENABLED=true` to activate
+
+### Development
+When `EMAIL_ENABLED=false`, emails are logged but not sent, making development safe.
 
 ## Marketing Notes
 
