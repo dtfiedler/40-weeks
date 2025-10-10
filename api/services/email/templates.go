@@ -205,107 +205,139 @@ You're receiving this because you're part of {{.ParentNames}}'s pregnancy villag
 
 // WelcomeEmailTemplate generates welcome email content for new village members
 func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string, error) {
-	htmlTemplate := `
-<!DOCTYPE html>
-<html>
+	htmlTemplate := `<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to the Pregnancy Village</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-    <style>
-        body { 
-            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            line-height: 1.6; 
-            color: #333; 
-            margin: 0; 
-            padding: 0; 
-            background-color: #f8f9fa; 
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Welcome to {{.ParentNames}}'s Journey</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:AllowPNG/>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style type="text/css">
+        /* Reset styles */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
         }
-        .container { 
-            max-width: 600px; 
-            margin: 0 auto; 
-            background-color: #ffffff; 
-            box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.1);
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
         }
-        .header { 
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); 
-            color: white; 
-            padding: 40px 30px; 
-            text-align: center; 
-            position: relative;
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            height: auto;
+            line-height: 100%;
+            outline: none;
+            text-decoration: none;
         }
-        .header h1 { 
-            margin: 0; 
-            font-size: 28px; 
-            font-weight: 700; 
-            font-family: 'DM Serif Display', serif;
+        
+        /* Base styles */
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #f8f9fa !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333333;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        
+        /* Header with gradient */
+        .header {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        
         .header p {
             margin: 10px 0 0 0;
             font-size: 16px;
+            color: #ffffff;
             opacity: 0.95;
             font-weight: 500;
         }
+        
         .cover-photo {
             width: 120px;
             height: 120px;
-            border-radius: 50%;
+            border-radius: 60px;
             border: 4px solid rgba(255,255,255,0.8);
             margin: 20px auto 0;
-            object-fit: cover;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: block;
         }
-        .content { 
-            padding: 40px 30px; 
+        
+        /* Content area */
+        .content {
+            padding: 40px 30px;
         }
-        .welcome-card { 
-            border: 2px solid #fbbf24; 
-            border-radius: 12px; 
-            padding: 25px; 
-            margin: 25px 0; 
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); 
+        
+        .content h2 {
+            color: #d97706;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 24px;
         }
+        
+        .content p {
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: #333333;
+        }
+        
+        /* Welcome card */
+        .welcome-card {
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+        
         .welcome-card h3 {
             color: #d97706;
             font-weight: 600;
             font-size: 18px;
-            margin-bottom: 15px;
+            margin: 0 0 15px 0;
         }
+        
         .welcome-card ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
+        
         .welcome-card li {
             padding: 8px 0;
             font-weight: 500;
             color: #78350f;
+            font-size: 15px;
         }
-        .cta-button { 
-            display: inline-block; 
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); 
-            color: white; 
-            padding: 16px 32px; 
-            text-decoration: none; 
-            border-radius: 8px; 
-            font-weight: 600; 
-            margin: 25px 0; 
-            font-family: 'Poppins', sans-serif;
-            font-size: 16px;
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
-            transition: all 0.2s ease;
-            text-align: center;
-            display: block;
-            max-width: 250px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .cta-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(251, 191, 36, 0.4);
-        }
+        
+        /* Pregnancy details */
         .pregnancy-details {
             background-color: #f8f9fa;
             border-radius: 8px;
@@ -314,38 +346,67 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
             text-align: center;
             border-left: 4px solid #fbbf24;
         }
-        .footer { 
-            background-color: #f8f9fa; 
-            padding: 30px; 
-            text-align: center; 
-            color: #666; 
-            font-size: 14px; 
-            border-top: 1px solid #e9ecef; 
+        
+        .pregnancy-details p {
+            margin: 0;
+            font-weight: 600;
+            color: #78350f;
         }
-        .footer a { 
-            color: #d97706; 
-            text-decoration: none; 
+        
+        /* CTA Button */
+        .cta-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            color: #ffffff !important;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .footer p {
+            color: #666666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        
+        .footer a {
+            color: #d97706;
+            text-decoration: none;
             font-weight: 500;
-        }
-        .footer a:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="email-container">
+        <!-- Header with gradient -->
         <div class="header">
             <h1>Welcome to {{.ParentNames}}'s Journey! 👶</h1>
             <p>You've been invited to their pregnancy village</p>
-            {{if .CoverPhotoURL}}
-            <img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo">
-            {{end}}
+            {{if .CoverPhotoURL}}<img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo">{{end}}
         </div>
         
+        <!-- Main content -->
         <div class="content">
-            <h2 style="color: #d97706; font-weight: 600; margin-bottom: 20px;">Hello {{.RecipientName}}!</h2>
-            <p style="font-size: 16px; margin-bottom: 25px;">{{.ParentNames}} has invited you to follow their pregnancy journey and be part of their special moments.</p>
+            <h2>Hello {{.RecipientName}}!</h2>
+            <p>{{.ParentNames}} has invited you to follow their pregnancy journey and be part of their special moments.</p>
             
+            <!-- What to expect card -->
             <div class="welcome-card">
                 <h3>What you can expect:</h3>
                 <ul>
@@ -356,15 +417,18 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
                 </ul>
             </div>
             
+            <!-- Pregnancy details -->
             <div class="pregnancy-details">
-                <p style="margin: 0; font-weight: 600; color: #78350f;">
-                    Due date: <strong>{{.DueDate}}</strong> • Currently at week <strong>{{.CurrentWeek}}</strong>
-                </p>
+                <p>Due date: <strong>{{.DueDate}}</strong> • Currently at week <strong>{{.CurrentWeek}}</strong></p>
             </div>
             
-            <a href="{{.TimelineURL}}" class="cta-button">View Their Timeline</a>
+            <!-- CTA Button -->
+            <div class="cta-container">
+                <a href="{{.TimelineURL}}" class="cta-button">View Their Timeline</a>
+            </div>
         </div>
         
+        <!-- Footer -->
         <div class="footer">
             <p>Thanks for being part of {{.ParentNames}}'s pregnancy village!</p>
             <p><a href="{{.TimelineURL}}">View Timeline</a> | <a href="#">Unsubscribe</a></p>
