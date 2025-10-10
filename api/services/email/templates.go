@@ -283,12 +283,11 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         
         .cover-photo {
             width: 100%;
-            max-width: 500px;
-            height: 250px;
+            max-width: 400px;
+            height: 300px;
             border-radius: 12px;
-            margin: 0 auto 30px;
+            margin: 0 auto 15px;
             display: block;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
         /* Content area */
@@ -403,8 +402,8 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         
         <!-- Cover Photo -->
         {{if .CoverPhotoURL}}
-        <div style="padding: 0 30px;">
-            <img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo" style="width: 100%; max-width: 500px; height: 250px; border-radius: 12px; margin: 0 auto 30px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.1); object-fit: cover;">
+        <div style="padding: 30px 30px 0 30px;">
+            <img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo" style="width: 100%; max-width: 400px; height: 300px; border-radius: 12px; margin: 0 auto 15px; display: block; object-fit: cover;">
         </div>
         {{end}}
         
