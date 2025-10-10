@@ -282,12 +282,13 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         }
         
         .cover-photo {
-            width: 120px;
-            height: 120px;
-            border-radius: 60px;
-            border: 4px solid rgba(255,255,255,0.8);
-            margin: 20px auto 0;
+            width: 100%;
+            max-width: 500px;
+            height: 250px;
+            border-radius: 12px;
+            margin: 0 auto 30px;
             display: block;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
         /* Content area */
@@ -398,13 +399,19 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         <div class="header">
             <h1>Welcome to {{.ParentNames}}'s Journey!</h1>
             <p>You've been invited to their pregnancy village</p>
-            {{if .CoverPhotoURL}}<img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo" style="width: 120px; height: 120px; border-radius: 60px; border: 4px solid rgba(255,255,255,0.8); margin: 20px auto 0; display: block; object-fit: cover;">{{end}}
         </div>
+        
+        <!-- Cover Photo -->
+        {{if .CoverPhotoURL}}
+        <div style="padding: 0 30px;">
+            <img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo" style="width: 100%; max-width: 500px; height: 250px; border-radius: 12px; margin: 0 auto 30px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.1); object-fit: cover;">
+        </div>
+        {{end}}
         
         <!-- Main content -->
         <div class="content">
             <h2>Hello {{.RecipientName}}!</h2>
-            <p>{{.ParentNames}} has invited you to follow their pregnancy journey and be part of their special moments.</p>
+            <p>{{.ParentNames}} has invited you to follow their pregnancy and be part of their special moments.</p>
             
             <!-- What to expect card -->
             <div class="welcome-card">
