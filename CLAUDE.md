@@ -190,6 +190,11 @@ This application uses a **unified architecture** where one Go service handles bo
 4. Access frontend at `http://localhost:8080`
 5. Test API endpoints at `http://localhost:8080/api/*`
 
+### Git Workflow
+- **ALWAYS ask before committing**: Never commit changes without explicit user approval
+- **ALWAYS ask before pushing**: Never push to remote repository without explicit user request
+- When ready to commit, always ask the user if they want to commit and push the changes
+
 This unified approach provides:
 - **Simplicity**: Single service to deploy and maintain
 - **Performance**: No network latency between frontend and backend
