@@ -236,14 +236,14 @@
 
 			<!-- Upcoming Milestones -->
 			<div>
-				<div class="card p-6">
-					<h2 class="text-xl font-semibold text-gray-900 mb-4 font-serif">Upcoming Milestones</h2>
-					<div class="space-y-3" id="upcomingMilestones">
+				<div class="card p-6 h-full flex flex-col">
+					<h2 class="text-xl font-semibold text-gray-900 mb-4 font-serif">Recent Milestones</h2>
+					<div class="space-y-3 flex-1 overflow-hidden" id="upcomingMilestones">
 						<div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
 							<div class="text-sm font-medium text-blue-800">Loading milestones...</div>
 						</div>
 					</div>
-					<div class="mt-4">
+					<div class="mt-2 pt-2 border-t border-gray-100">
 						<button class="btn-secondary w-full" onclick="viewMilestones()">View All Milestones</button>
 					</div>
 				</div>
@@ -390,8 +390,8 @@
 		function displayPregnancyData(pregnancy) {
 			// Update greeting
 			const greeting = document.getElementById('pregnancyGreeting');
-			const babyName = pregnancy.baby_name || 'Baby';
-			greeting.textContent = `You're expecting ${babyName}!`;
+			const babyName = pregnancy.baby_name || '';
+			greeting.textContent = babyName ? `You're expecting ${babyName}!` : "You're expecting a baby!";
 
 			// Update current week
 			const currentWeekEl = document.getElementById('currentWeek');
@@ -403,7 +403,7 @@
 			// Update pregnancy details
 			const dueDate = new Date(pregnancy.due_date).toLocaleDateString();
 			document.getElementById('dueDate').textContent = dueDate;
-			document.getElementById('babyName').textContent = pregnancy.baby_name || 'Baby';
+			document.getElementById('babyName').textContent = pregnancy.baby_name || 'TBD';
 			document.getElementById('partnerName').textContent = pregnancy.partner_name || 'Not specified';
 			
 			// Calculate weeks remaining
@@ -447,8 +447,112 @@
 		}
 
 		function viewMilestones() {
-			// TODO: Implement milestone view
-			alert('Milestone tracking coming soon!');
+			document.getElementById('milestonesModal').classList.remove('hidden');
+			document.body.style.overflow = 'hidden';
+			
+			if (window.allMilestones) {
+				displayAllMilestones(window.allMilestones);
+			}
+		}
+		
+		function closeMilestonesModal() {
+			document.getElementById('milestonesModal').classList.add('hidden');
+			document.body.style.overflow = '';
+		}
+		
+		// Display all milestones in the modal with vertical timeline
+		function displayAllMilestones(milestones) {
+			const container = document.getElementById('milestonesTimeline');
+			
+			if (!milestones || milestones.length === 0) {
+				container.innerHTML = '<p class="text-center text-gray-500">No milestones to display</p>';
+				return;
+			}
+			
+			// Reverse the milestones to show most recent first
+			const reversedMilestones = [...milestones].reverse();
+			
+			container.innerHTML = reversedMilestones.map((milestone, index) => {
+				const date = new Date(milestone.date);
+				const dateStr = date.toLocaleDateString('en-US', { 
+					year: 'numeric', 
+					month: 'long', 
+					day: 'numeric' 
+				});
+				
+				// Use consistent colors, differentiate only by past/current/future
+				let bgColor = 'bg-white';
+				let borderColor = 'border-gray-300';
+				let dotColor = 'bg-blue-500';
+				let textColor = 'text-gray-700';
+				
+				if (milestone.is_past) {
+					textColor = 'text-gray-500';
+					bgColor = 'bg-gray-50';
+					dotColor = 'bg-green-500';
+				}
+				
+				if (milestone.is_current) {
+					bgColor = 'bg-primary-50';
+					borderColor = 'border-primary-400';
+					dotColor = 'bg-primary-500 ring-4 ring-primary-200';
+					textColor = 'text-primary-900';
+				}
+				
+				// Type-specific tag colors and labels
+				let tagColor = 'bg-blue-100 text-blue-700';
+				let tagLabel = 'Development';
+				
+				if (milestone.type === 'appointment') {
+					tagColor = 'bg-green-100 text-green-700';
+					tagLabel = 'Appointment';
+				} else if (milestone.type === 'milestone') {
+					tagColor = 'bg-purple-100 text-purple-700';
+					tagLabel = 'Milestone';
+				}
+				
+				return `
+					<div class="relative flex items-start">
+						<!-- Timeline line -->
+						${index < reversedMilestones.length - 1 ? `
+							<div class="absolute top-6 left-6 w-0.5 h-full ${milestone.is_past ? 'bg-green-500' : 'bg-gray-200'} -translate-x-1/2"></div>
+						` : ''}
+						
+						<!-- Timeline dot -->
+						<div class="flex-shrink-0 w-12 h-12 ${dotColor} rounded-full flex items-center justify-center text-white z-10">
+							<span class="text-sm font-semibold">${milestone.week}</span>
+						</div>
+						
+						<!-- Content -->
+						<div class="ml-4 flex-1 pb-2">
+							<div class="${bgColor} border ${borderColor} rounded-lg p-4 shadow-sm">
+								<div class="flex items-start justify-between">
+									<div class="flex-1">
+										<h3 class="text-base font-semibold ${textColor}">
+											${milestone.title}
+										</h3>
+										<p class="text-sm ${textColor} mt-1">${milestone.description}</p>
+										<div class="mt-3">
+											<span class="inline-block px-2 py-1 text-xs font-medium ${tagColor} rounded-full">
+												${tagLabel}
+											</span>
+										</div>
+									</div>
+									<div class="text-sm ${textColor} ml-4">${dateStr}</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				`;
+			}).join('');
+			
+			// Scroll to current milestone
+			setTimeout(() => {
+				const currentMilestone = container.querySelector('.bg-primary-50');
+				if (currentMilestone) {
+					currentMilestone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}
+			}, 100);
 		}
 
 		async function viewTimeline() {
@@ -737,9 +841,11 @@
 		});
 
 		// Load data when page loads
-		loadPregnancyData();
-		loadTimelineEvents();
-		loadMilestones();
+		document.addEventListener('DOMContentLoaded', function() {
+			loadPregnancyData();
+			loadTimelineEvents();
+			loadMilestones();
+		});
 	</script>
 
 	<!-- Update Modal -->
@@ -1040,10 +1146,90 @@
 			}, 3000);
 		}
 
-		// Load milestones for the dropdown
+		// Load milestones and display them
 		async function loadMilestones() {
-			// This will be implemented when milestone endpoints are ready
-			// For now using static list in the dropdown
+			try {
+				const response = await fetch('/api/milestones', {
+					headers: {
+						'Authorization': 'Bearer ' + token
+					}
+				});
+				
+				if (response.ok) {
+					const milestones = await response.json();
+					displayUpcomingMilestones(milestones);
+					// Store milestones for the modal
+					window.allMilestones = milestones;
+				} else {
+					// Show error state
+					const container = document.getElementById('upcomingMilestones');
+					container.innerHTML = `
+						<div class="text-center py-4">
+							<p class="text-gray-500 text-sm">Unable to load milestones</p>
+						</div>
+					`;
+				}
+			} catch (err) {
+				// Show error state
+				const container = document.getElementById('upcomingMilestones');
+				container.innerHTML = `
+					<div class="text-center py-4">
+						<p class="text-gray-500 text-sm">Unable to load milestones</p>
+					</div>
+				`;
+			}
+		}
+
+		// Display milestones in the sidebar (always show 3 most relevant)
+		function displayUpcomingMilestones(milestones) {
+			const container = document.getElementById('upcomingMilestones');
+			
+			if (!milestones || milestones.length === 0) {
+				container.innerHTML = `
+					<div class="text-center py-4">
+						<p class="text-gray-500 text-sm">No milestones available</p>
+					</div>
+				`;
+				return;
+			}
+			
+			// Get upcoming milestones first, then fall back to recent past ones
+			const upcomingMilestones = milestones.filter(m => !m.is_past);
+			const pastMilestones = milestones.filter(m => m.is_past).reverse(); // Most recent first
+			
+			// Combine upcoming and recent past to always show 3 milestones, most recent at top
+			const displayMilestones = [...upcomingMilestones, ...pastMilestones].slice(0, 3);
+			
+			container.innerHTML = displayMilestones.map(milestone => {
+				const date = new Date(milestone.date);
+				const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+				
+				// Use consistent colors, differentiate only by past/current/future
+				let bgColor = 'bg-blue-50 border-blue-200';
+				let textColor = 'text-blue-800';
+				
+				if (milestone.is_current) {
+					bgColor = 'bg-primary-50 border-primary-300 ring-2 ring-primary-400';
+					textColor = 'text-primary-900 font-semibold';
+				} else if (milestone.is_past) {
+					bgColor = 'bg-gray-50 border-gray-200';
+					textColor = 'text-gray-600';
+				}
+				
+				return `
+					<div class="p-2 ${bgColor} border rounded-lg ${milestone.is_current ? 'shadow-md' : ''}">
+						<div class="flex items-start justify-between">
+							<div class="flex-1">
+								<div class="text-sm font-medium ${textColor} flex items-center">
+									Week ${milestone.week}
+								</div>
+								<div class="text-sm ${textColor} mt-1">${milestone.title}</div>
+							</div>
+							<div class="text-xs ${textColor} ml-2">${dateStr}</div>
+						</div>
+					</div>
+				`;
+			}).join('');
 		}
 
 		// Edit Update Functions
@@ -1524,6 +1710,30 @@
 						</div>
 					</div>
 				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Milestones Modal -->
+	<div id="milestonesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+		<div class="card max-w-2xl w-full max-h-[90vh] overflow-hidden">
+			<div class="p-6">
+				<div class="flex justify-between items-center mb-6">
+					<h3 class="text-xl font-semibold text-gray-900">Your Pregnancy Milestones</h3>
+					<button onclick="closeMilestonesModal()" class="text-gray-400 hover:text-gray-600">
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						</svg>
+					</button>
+				</div>
+
+				<!-- Timeline Container -->
+				<div class="overflow-y-auto max-h-[60vh]">
+					<div id="milestonesTimeline" class="space-y-4">
+						<!-- Milestones will be loaded here -->
+					</div>
+				</div>
+
 			</div>
 		</div>
 	</div>

@@ -408,7 +408,7 @@
 		function updatePregnancyOverview(pregnancy, currentWeek) {
 			document.getElementById('currentWeek').textContent = currentWeek || '--';
 			
-			const babyName = pregnancy.baby_name || 'Baby';
+			const babyName = pregnancy.baby_name || 'TBD';
 			const weeksRemaining = Math.max(0, 40 - (currentWeek || 0));
 			
 			const description = document.getElementById('pregnancyDescription');

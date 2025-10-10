@@ -60,6 +60,7 @@ func setupRoutes() {
 	http.HandleFunc("/api/village-members/", middleware.AuthMiddleware(villageMemberHandler))
 	http.HandleFunc("/api/timeline", middleware.AuthMiddleware(handlers.GetCombinedTimelineHandler))
 	http.HandleFunc("/timeline/", handlers.PublicTimelineHandler)
+	http.HandleFunc("/api/milestones", middleware.AuthMiddleware(handlers.GetMilestonesHandler))
 	http.HandleFunc("/api/updates", middleware.AuthMiddleware(updateHandler))
 	http.HandleFunc("/api/updates/", middleware.AuthMiddleware(updateDetailHandler))
 	http.HandleFunc("/api/cover-photo", middleware.AuthMiddleware(coverPhotoHandler))
