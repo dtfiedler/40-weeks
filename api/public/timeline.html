@@ -148,11 +148,11 @@
 		}
 
 		function updatePregnancyInfo(pregnancy) {
-			const title = `Follow ${pregnancy.parent_names}'s journey!`;
-			const description = `Follow ${pregnancy.parent_names}'s pregnancy journey. Currently at week ${pregnancy.current_week}, due ${formatDate(pregnancy.due_date)}`;
+			const title = `Follow ${pregnancy.parent_names}'s pregnancy!`;
+			const description = `Follow ${pregnancy.parent_names}'s pregnancy. Currently at week ${pregnancy.current_week}, due ${formatDate(pregnancy.due_date)}`;
 			
 			// Update page content
-			document.getElementById('pregnancyTitle').textContent = `${pregnancy.parent_names}'s Journey`;
+			document.getElementById('pregnancyTitle').textContent = `${pregnancy.parent_names}'s Pregnancy`;
 			document.getElementById('pregnancySubtitle').textContent = `Week ${pregnancy.current_week} • Due ${formatDate(pregnancy.due_date)}`;
 			
 			// Update page title and meta tags

@@ -83,9 +83,9 @@ func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		userName = "Parent"
 	}
 
-	parentNames := userName
+	parentNames := strings.Fields(strings.TrimSpace(userName))[0]
 	if pregnancy.PartnerName != nil && *pregnancy.PartnerName != "" {
-		parentNames = parentNames + " & " + *pregnancy.PartnerName
+		parentNames = parentNames + " & " + strings.Fields(strings.TrimSpace(*pregnancy.PartnerName))[0]
 	}
 
 	babyName := "Baby"
