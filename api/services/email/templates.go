@@ -260,7 +260,7 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         
         /* Header with gradient */
         .header {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            background: linear-gradient(135deg, #fbbf24 0%, #fbbf24 50%, #f59e0b 100%);
             padding: 40px 30px;
             text-align: center;
         }
@@ -325,13 +325,13 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         }
         
         .welcome-card ul {
-            list-style: none;
-            padding: 0;
+            list-style: disc;
+            padding-left: 20px;
             margin: 0;
         }
         
         .welcome-card li {
-            padding: 8px 0;
+            padding: 4px 0;
             font-weight: 500;
             color: #78350f;
             font-size: 15px;
@@ -361,7 +361,7 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         
         .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            background: linear-gradient(135deg, #fbbf24 0%, #fbbf24 50%, #f59e0b 100%);
             color: #ffffff !important;
             padding: 16px 32px;
             text-decoration: none;
