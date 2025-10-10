@@ -73,8 +73,8 @@ func (e *EmailService) UpdateNotificationTemplate(data *TemplateData) (string, s
         </div>
         
         <div class="content">
-            <h2>Hello {{.RecipientName}}!</h2>
-            <p>{{.ParentNames}} just shared a new update from their pregnancy journey.</p>
+            <h2>Hi {{.RecipientName}}!</h2>
+            <p>{{.ParentNames}} just shared a new update from their pregnancy.</p>
             
             <div class="update-card">
                 {{if .UpdateWeek}}<div class="week-badge">Week {{.UpdateWeek}}</div>{{end}}
@@ -102,11 +102,11 @@ func (e *EmailService) UpdateNotificationTemplate(data *TemplateData) (string, s
 </body>
 </html>`
 
-	textTemplate := `New Pregnancy Update from {{.ParentNames}}
+	textTemplate := `New post from {{.ParentNames}}
 
-Hello {{.RecipientName}}!
+Hi {{.RecipientName}}!
 
-{{.ParentNames}} just shared a new update from their pregnancy journey.
+{{.ParentNames}} just shared a new update!
 
 {{if .UpdateWeek}}Week {{.UpdateWeek}}: {{end}}{{.UpdateTitle}}
 
@@ -140,7 +140,7 @@ func (e *EmailService) MilestoneNotificationTemplate(data *TemplateData) (string
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
         .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; text-align: center; }
         .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
-        .content { padding: 40px 30px; }
+        .content { padding: 20px 30px; }
         .milestone-card { border: 1px solid #f5576c; border-radius: 8px; padding: 25px; margin: 20px 0; background: linear-gradient(135deg, #ffeef4 0%, #fff5f8 100%); }
         .milestone-badge { background-color: #f5576c; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 15px; }
         .milestone-title { font-size: 22px; font-weight: 600; color: #333; margin-bottom: 10px; }
@@ -160,7 +160,7 @@ func (e *EmailService) MilestoneNotificationTemplate(data *TemplateData) (string
         
         <div class="content">
             <h2>Hello {{.RecipientName}}!</h2>
-            <p>Exciting news! {{.ParentNames}} just reached an important milestone in their pregnancy journey.</p>
+            <p>Exciting news! {{.ParentNames}} just reached an important milestone in their pregnancy.</p>
             
             <div class="milestone-card">
                 <div class="milestone-badge">{{.MilestoneType}}</div>
@@ -187,7 +187,7 @@ func (e *EmailService) MilestoneNotificationTemplate(data *TemplateData) (string
 
 Hello {{.RecipientName}}!
 
-Exciting news! {{.ParentNames}} just reached an important milestone in their pregnancy journey.
+Exciting news! {{.ParentNames}} just reached an important milestone in their pregnancy.
 
 Week {{.MilestoneWeek}}: {{.MilestoneTitle}}
 Type: {{.MilestoneType}}
@@ -211,7 +211,7 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Welcome to {{.ParentNames}}'s Journey</title>
+    <title>Welcome to {{.ParentNames}}'s Pregnancy</title>
     <!--[if mso]>
     <noscript>
         <xml>
@@ -339,18 +339,15 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         
         /* Pregnancy details */
         .pregnancy-details {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
             margin: 20px 0;
             text-align: center;
-            border-left: 4px solid #fbbf24;
         }
         
         .pregnancy-details p {
             margin: 0;
-            font-weight: 600;
-            color: #78350f;
+            font-weight: 700;
+            color: #333333;
+            font-size: 16px;
         }
         
         /* CTA Button */
@@ -396,36 +393,37 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
     <div class="email-container">
         <!-- Header with gradient -->
         <div class="header">
-            <h1>Welcome to {{.ParentNames}}'s Journey!</h1>
-            <p>You've been invited to their pregnancy village</p>
+            <h1>Welcome to {{.ParentNames}}'s Pregnancy!</h1>
+            <p>You've been invited to follow their pregnancy</p>
         </div>
         
         <!-- Cover Photo -->
         {{if .CoverPhotoURL}}
         <div style="padding: 30px 30px 0 30px;">
-            <img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo" style="width: 100%; max-width: 400px; height: 300px; border-radius: 12px; margin: 0 auto 15px; display: block; object-fit: cover;">
+            <img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo" style="width: 100%; max-width: 400px; height: 350px; border-radius: 12px; margin: 0 auto 15px; display: block; object-fit: cover;">
         </div>
         {{end}}
         
         <!-- Main content -->
         <div class="content">
             <h2>Hello {{.RecipientName}}!</h2>
-            <p>{{.ParentNames}} has invited you to follow their pregnancy and be part of their special moments.</p>
+            <p>{{.ParentNames}} {{if contains .ParentNames "&"}}have{{else}}has{{end}} invited you to follow their pregnancy and be part of their special moments.</p>
             
             <!-- What to expect card -->
             <div class="welcome-card">
                 <h3>What you can expect:</h3>
                 <ul>
-                    <li>Weekly pregnancy updates with photos</li>
+                    <li>Pregnancy updates with photos</li>
                     <li>Important milestone notifications</li>
                     <li>Keep track of the due date progress</li>
-                    <li>Connect with other village members</li>
+                    <li>Connect with others following their pregnancy</li>
                 </ul>
             </div>
             
             <!-- Pregnancy details -->
             <div class="pregnancy-details">
-                <p>Due date: <strong>{{.DueDate}}</strong> • Currently at week <strong>{{.CurrentWeek}}</strong></p>
+                <p>Due date: <strong>{{.DueDate}}</strong></p>
+                <p>Currently at week <strong>{{.CurrentWeek}}</strong></p>
             </div>
             
             <!-- CTA Button -->
@@ -444,11 +442,11 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
 </body>
 </html>`
 
-	textTemplate := `Welcome to {{.ParentNames}}'s Journey!
+	textTemplate := `Welcome to {{.ParentNames}}'s Pregnancy!
 
-Hello {{.RecipientName}}!
+Hi {{.RecipientName}}!
 
-{{.ParentNames}} has invited you to follow their pregnancy journey and be part of their special moments.
+{{.ParentNames}} {{if contains .ParentNames "&"}}have{{else}}has{{end}} invited you to follow their pregnancy and be part of their special moments.
 
 What you can expect:
 • Weekly pregnancy updates with photos
@@ -496,7 +494,7 @@ func (e *EmailService) GenerateSubject(emailType string, data *TemplateData) str
 	case models.EmailTypeMilestone:
 		return fmt.Sprintf("🎉 Milestone reached: Week %d - %s", data.MilestoneWeek, data.MilestoneTitle)
 	case models.EmailTypeWelcome:
-		return fmt.Sprintf("Welcome to %s's pregnancy journey!", data.ParentNames)
+		return fmt.Sprintf("Welcome to %s's pregnancy!", data.ParentNames)
 	case models.EmailTypeAnnouncement:
 		return fmt.Sprintf("Important announcement from %s", data.ParentNames)
 	case models.EmailTypeReminder:
