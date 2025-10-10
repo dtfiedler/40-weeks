@@ -211,7 +211,7 @@
 				
 				mediaHtml = `
 					<div class="mt-4">
-						<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
 							${allMedia.slice(0, 6).map(media => {
 								const ext = media.filename.toLowerCase().split('.').pop();
 								const isVideo = ['mp4', 'mov'].includes(ext);
