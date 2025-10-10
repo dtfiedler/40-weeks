@@ -36,9 +36,9 @@ func InitConfig() {
 		AWSRegion:       getEnvWithDefault("AWS_REGION", "us-east-1"),
 		AWSAccessKeyID:  getEnvWithDefault("AWS_ACCESS_KEY_ID", ""),
 		AWSSecretKey:    getEnvWithDefault("AWS_SECRET_ACCESS_KEY", ""),
-		SenderEmail:     getEnvWithDefault("SENDER_EMAIL", "noreply@40weeks.app"),
+		SenderEmail:     getEnvWithDefault("SENDER_EMAIL", "noreply@40weeks.xyz"),
 		SenderName:      getEnvWithDefault("SENDER_NAME", "40Weeks"),
-		BaseURL:         getEnvWithDefault("BASE_URL", "https://40weeks.app"),
+		BaseURL:         getEnvWithDefault("BASE_URL", "https://40weeks.xyz"),
 	}
 }
 
