@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"simple-go/api/models"
+	"strings"
 )
 
 // TemplateData contains data for email templates
@@ -467,7 +468,12 @@ Thanks for being part of {{.ParentNames}}'s pregnancy village!
 
 // renderTemplate renders a template with the given data
 func (e *EmailService) renderTemplate(name, templateStr string, data *TemplateData) string {
-	tmpl, err := template.New(name).Parse(templateStr)
+	// Create template with custom functions
+	funcMap := template.FuncMap{
+		"contains": strings.Contains,
+	}
+	
+	tmpl, err := template.New(name).Funcs(funcMap).Parse(templateStr)
 	if err != nil {
 		fmt.Printf("Error parsing template %s: %v\n", name, err)
 		return ""
