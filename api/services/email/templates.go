@@ -396,7 +396,7 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
     <div class="email-container">
         <!-- Header with gradient -->
         <div class="header">
-            <h1>Welcome to {{.ParentNames}}'s Journey! 👶</h1>
+            <h1>Welcome to {{.ParentNames}}'s Journey!</h1>
             <p>You've been invited to their pregnancy village</p>
             {{if .CoverPhotoURL}}<img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo">{{end}}
         </div>
@@ -410,10 +410,10 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
             <div class="welcome-card">
                 <h3>What you can expect:</h3>
                 <ul>
-                    <li>📸 Weekly pregnancy updates with photos</li>
-                    <li>🎯 Important milestone notifications</li>
-                    <li>📅 Keep track of the due date progress</li>
-                    <li>👥 Connect with other village members</li>
+                    <li>Weekly pregnancy updates with photos</li>
+                    <li>Important milestone notifications</li>
+                    <li>Keep track of the due date progress</li>
+                    <li>Connect with other village members</li>
                 </ul>
             </div>
             
@@ -438,17 +438,17 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
 </body>
 </html>`
 
-	textTemplate := `Welcome to {{.ParentNames}}'s Journey! 👶
+	textTemplate := `Welcome to {{.ParentNames}}'s Journey!
 
 Hello {{.RecipientName}}!
 
 {{.ParentNames}} has invited you to follow their pregnancy journey and be part of their special moments.
 
 What you can expect:
-• 📸 Weekly pregnancy updates with photos
-• 🎯 Important milestone notifications  
-• 📅 Keep track of the due date progress
-• 👥 Connect with other village members
+• Weekly pregnancy updates with photos
+• Important milestone notifications  
+• Keep track of the due date progress
+• Connect with other village members
 
 Currently at week {{.CurrentWeek}}, due {{.DueDate}}.
 
