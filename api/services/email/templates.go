@@ -398,7 +398,7 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
         <div class="header">
             <h1>Welcome to {{.ParentNames}}'s Journey!</h1>
             <p>You've been invited to their pregnancy village</p>
-            {{if .CoverPhotoURL}}<img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo">{{end}}
+            {{if .CoverPhotoURL}}<img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo" style="width: 120px; height: 120px; border-radius: 60px; border: 4px solid rgba(255,255,255,0.8); margin: 20px auto 0; display: block; object-fit: cover;">{{end}}
         </div>
         
         <!-- Main content -->

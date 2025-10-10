@@ -163,12 +163,17 @@ func (e *EmailService) SendWelcomeEmail(ctx context.Context, member *models.Vill
 	}
 
 	// Generate timeline URL
-	timelineURL := fmt.Sprintf("%s/view/%s", e.getBaseURL(), pregnancy.ShareID)
+	baseURL := e.getBaseURL()
+	timelineURL := fmt.Sprintf("%s/view/%s", baseURL, pregnancy.ShareID)
+	log.Printf("Using BASE_URL: %s for pregnancy %d", baseURL, pregnancy.ID)
 
 	// Generate cover photo URL
 	coverPhotoURL := ""
 	if pregnancy.CoverPhotoFilename != nil && *pregnancy.CoverPhotoFilename != "" {
-		coverPhotoURL = fmt.Sprintf("%s/images/covers/%s", e.getBaseURL(), *pregnancy.CoverPhotoFilename)
+		coverPhotoURL = fmt.Sprintf("%s/images/covers/%s", baseURL, *pregnancy.CoverPhotoFilename)
+		log.Printf("Generated cover photo URL: %s", coverPhotoURL)
+	} else {
+		log.Printf("No cover photo found for pregnancy %d - CoverPhotoFilename: %v", pregnancy.ID, pregnancy.CoverPhotoFilename)
 	}
 
 	// Prepare template data
