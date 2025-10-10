@@ -23,6 +23,9 @@ func main() {
 	// This will silently fail if .env doesn't exist, which is fine
 	_ = godotenv.Load()
 
+	// Initialize configuration after loading environment variables
+	config.InitConfig()
+
 	// Initialize database
 	if err := db.InitDB(); err != nil {
 		log.Fatal("Failed to initialize database:", err)

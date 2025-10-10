@@ -165,6 +165,12 @@ func (e *EmailService) SendWelcomeEmail(ctx context.Context, member *models.Vill
 	// Generate timeline URL
 	timelineURL := fmt.Sprintf("%s/view/%s", e.getBaseURL(), pregnancy.ShareID)
 
+	// Generate cover photo URL
+	coverPhotoURL := ""
+	if pregnancy.CoverPhotoFilename != nil && *pregnancy.CoverPhotoFilename != "" {
+		coverPhotoURL = fmt.Sprintf("%s/images/covers/%s", e.getBaseURL(), *pregnancy.CoverPhotoFilename)
+	}
+
 	// Prepare template data
 	templateData := &TemplateData{
 		SenderName:        e.config.SenderName,
@@ -174,6 +180,7 @@ func (e *EmailService) SendWelcomeEmail(ctx context.Context, member *models.Vill
 		DueDate:           pregnancy.DueDate.Format("January 2, 2006"),
 		CurrentWeek:       pregnancy.GetCurrentWeek(),
 		TimelineURL:       timelineURL,
+		CoverPhotoURL:     coverPhotoURL,
 		VillageMemberName: member.Name,
 	}
 
@@ -313,9 +320,7 @@ func (e *EmailService) getParentNames(pregnancy *models.Pregnancy) string {
 }
 
 func (e *EmailService) getBaseURL() string {
-	// This should be configurable based on environment
-	// For now, using a placeholder - you might want to add this to config
-	return "https://40weeks.app"
+	return e.config.BaseURL
 }
 
 // getStringValue safely gets string value from pointer

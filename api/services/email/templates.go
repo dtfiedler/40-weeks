@@ -17,6 +17,7 @@ type TemplateData struct {
 	DueDate       string
 	CurrentWeek   int
 	TimelineURL   string
+	CoverPhotoURL string
 	
 	// Update-specific data
 	Update          *models.PregnancyUpdate
@@ -211,28 +212,139 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to the Pregnancy Village</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8f9fa; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
-        .content { padding: 40px 30px; }
-        .welcome-card { border: 1px solid #667eea; border-radius: 8px; padding: 25px; margin: 20px 0; background: linear-gradient(135deg, #f0f2ff 0%, #f8f9ff 100%); }
-        .cta-button { display: inline-block; background-color: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: 600; margin: 20px 0; }
-        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #e9ecef; }
-        .footer a { color: #667eea; text-decoration: none; }
+        body { 
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f8f9fa; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: #ffffff; 
+            box-shadow: 0 4px 12px 0 rgb(0 0 0 / 0.1);
+        }
+        .header { 
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); 
+            color: white; 
+            padding: 40px 30px; 
+            text-align: center; 
+            position: relative;
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 28px; 
+            font-weight: 700; 
+            font-family: 'DM Serif Display', serif;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+        .cover-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.8);
+            margin: 20px auto 0;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .content { 
+            padding: 40px 30px; 
+        }
+        .welcome-card { 
+            border: 2px solid #fbbf24; 
+            border-radius: 12px; 
+            padding: 25px; 
+            margin: 25px 0; 
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); 
+        }
+        .welcome-card h3 {
+            color: #d97706;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .welcome-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .welcome-card li {
+            padding: 8px 0;
+            font-weight: 500;
+            color: #78350f;
+        }
+        .cta-button { 
+            display: inline-block; 
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); 
+            color: white; 
+            padding: 16px 32px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            margin: 25px 0; 
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+            transition: all 0.2s ease;
+            text-align: center;
+            display: block;
+            max-width: 250px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(251, 191, 36, 0.4);
+        }
+        .pregnancy-details {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid #fbbf24;
+        }
+        .footer { 
+            background-color: #f8f9fa; 
+            padding: 30px; 
+            text-align: center; 
+            color: #666; 
+            font-size: 14px; 
+            border-top: 1px solid #e9ecef; 
+        }
+        .footer a { 
+            color: #d97706; 
+            text-decoration: none; 
+            font-weight: 500;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Welcome to {{.SenderName}}! 👶</h1>
-            <p>You've been invited to join {{.ParentNames}}'s pregnancy village</p>
+            <h1>Welcome to {{.ParentNames}}'s Journey! 👶</h1>
+            <p>You've been invited to their pregnancy village</p>
+            {{if .CoverPhotoURL}}
+            <img src="{{.CoverPhotoURL}}" alt="{{.ParentNames}}" class="cover-photo">
+            {{end}}
         </div>
         
         <div class="content">
-            <h2>Hello {{.RecipientName}}!</h2>
-            <p>{{.ParentNames}} has invited you to follow their pregnancy journey and be part of their special moments.</p>
+            <h2 style="color: #d97706; font-weight: 600; margin-bottom: 20px;">Hello {{.RecipientName}}!</h2>
+            <p style="font-size: 16px; margin-bottom: 25px;">{{.ParentNames}} has invited you to follow their pregnancy journey and be part of their special moments.</p>
             
             <div class="welcome-card">
                 <h3>What you can expect:</h3>
@@ -244,9 +356,13 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
                 </ul>
             </div>
             
-            <p>Due date: <strong>{{.DueDate}}</strong> • Currently at week <strong>{{.CurrentWeek}}</strong></p>
+            <div class="pregnancy-details">
+                <p style="margin: 0; font-weight: 600; color: #78350f;">
+                    Due date: <strong>{{.DueDate}}</strong> • Currently at week <strong>{{.CurrentWeek}}</strong>
+                </p>
+            </div>
             
-            <a href="{{.TimelineURL}}" class="cta-button">View Pregnancy Timeline</a>
+            <a href="{{.TimelineURL}}" class="cta-button">View Their Timeline</a>
         </div>
         
         <div class="footer">
@@ -258,7 +374,7 @@ func (e *EmailService) WelcomeEmailTemplate(data *TemplateData) (string, string,
 </body>
 </html>`
 
-	textTemplate := `Welcome to {{.SenderName}}! 👶
+	textTemplate := `Welcome to {{.ParentNames}}'s Journey! 👶
 
 Hello {{.RecipientName}}!
 
@@ -272,7 +388,7 @@ What you can expect:
 
 Currently at week {{.CurrentWeek}}, due {{.DueDate}}.
 
-View the pregnancy timeline: {{.TimelineURL}}
+View their timeline: {{.TimelineURL}}
 
 ---
 Thanks for being part of {{.ParentNames}}'s pregnancy village!

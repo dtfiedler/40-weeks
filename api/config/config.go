@@ -18,11 +18,13 @@ type Config struct {
 	AWSSecretKey    string
 	SenderEmail     string
 	SenderName      string
+	BaseURL         string
 }
 
 var AppConfig *Config
 
-func init() {
+// InitConfig initializes the configuration after environment variables are loaded
+func InitConfig() {
 	AppConfig = &Config{
 		JWTSecret:       getEnvWithDefault("JWT_SECRET", "your-secret-key-change-this"),
 		ServerPort:      getEnvWithDefault("PORT", "8080"),
@@ -36,6 +38,7 @@ func init() {
 		AWSSecretKey:    getEnvWithDefault("AWS_SECRET_ACCESS_KEY", ""),
 		SenderEmail:     getEnvWithDefault("SENDER_EMAIL", "noreply@40weeks.app"),
 		SenderName:      getEnvWithDefault("SENDER_NAME", "40Weeks"),
+		BaseURL:         getEnvWithDefault("BASE_URL", "https://40weeks.app"),
 	}
 }
 
