@@ -14,9 +14,15 @@ import (
 	"simple-go/api/handlers"
 	"simple-go/api/middleware"
 	"simple-go/api/routes"
+	
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables from .env file
+	// This will silently fail if .env doesn't exist, which is fine
+	_ = godotenv.Load()
+
 	// Initialize database
 	if err := db.InitDB(); err != nil {
 		log.Fatal("Failed to initialize database:", err)
@@ -64,6 +70,12 @@ func setupRoutes() {
 	http.HandleFunc("/api/updates", middleware.AuthMiddleware(updateHandler))
 	http.HandleFunc("/api/updates/", middleware.AuthMiddleware(updateDetailHandler))
 	http.HandleFunc("/api/cover-photo", middleware.AuthMiddleware(coverPhotoHandler))
+	// Email notification routes
+	http.HandleFunc("/api/email/test", middleware.AuthMiddleware(handlers.SendTestEmailHandler))
+	http.HandleFunc("/api/email/notifications", middleware.AuthMiddleware(handlers.GetEmailNotificationsHandler))
+	http.HandleFunc("/api/email/statistics", middleware.AuthMiddleware(handlers.GetEmailStatisticsHandler))
+	http.HandleFunc("/api/email/config-test", middleware.AuthMiddleware(handlers.TestEmailConfigurationHandler))
+	http.HandleFunc("/api/email/send-update", middleware.AuthMiddleware(handlers.SendUpdateNotificationHandler))
 	http.HandleFunc("/images/", imageHandler)
 	http.HandleFunc("/videos/", videoHandler)
 	http.HandleFunc("/app", routes.AppPageHandler)

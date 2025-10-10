@@ -11,6 +11,13 @@ type Config struct {
 	DatabaseURL     string
 	ImagesDirectory string
 	VideosDirectory string
+	// Email configuration
+	EmailEnabled    bool
+	AWSRegion       string
+	AWSAccessKeyID  string
+	AWSSecretKey    string
+	SenderEmail     string
+	SenderName      string
 }
 
 var AppConfig *Config
@@ -22,6 +29,13 @@ func init() {
 		DatabaseURL:     getEnvWithDefault("DATABASE_URL", "./data/sqlite/core.db"),
 		ImagesDirectory: getEnvWithDefault("IMAGES_DIRECTORY", "./data/images"),
 		VideosDirectory: getEnvWithDefault("VIDEOS_DIRECTORY", "./data/videos"),
+		// Email configuration
+		EmailEnabled:    GetEnvAsBool("EMAIL_ENABLED", false),
+		AWSRegion:       getEnvWithDefault("AWS_REGION", "us-east-1"),
+		AWSAccessKeyID:  getEnvWithDefault("AWS_ACCESS_KEY_ID", ""),
+		AWSSecretKey:    getEnvWithDefault("AWS_SECRET_ACCESS_KEY", ""),
+		SenderEmail:     getEnvWithDefault("SENDER_EMAIL", "noreply@40weeks.app"),
+		SenderName:      getEnvWithDefault("SENDER_NAME", "40Weeks"),
 	}
 }
 

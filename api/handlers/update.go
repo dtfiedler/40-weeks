@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,6 +18,7 @@ import (
 	"simple-go/api/db"
 	"simple-go/api/middleware"
 	"simple-go/api/models"
+	"simple-go/api/services/email"
 )
 
 // CreateUpdateRequest represents the request to create a new pregnancy update
@@ -266,6 +269,44 @@ func CreateUpdateHandler(w http.ResponseWriter, r *http.Request) {
 		rows.Scan(&photo.ID, &photo.UpdateID, &photo.Filename, &photo.OriginalFilename,
 			&photo.FileSize, &photo.Caption, &photo.SortOrder, &photo.CreatedAt)
 		update.Photos = append(update.Photos, photo)
+	}
+
+	// Send email notification if update is shared
+	if update.IsShared {
+		go func() {
+			// Send email notifications in background to avoid blocking the response
+			emailService, err := email.NewEmailService()
+			if err != nil {
+				log.Printf("Failed to initialize email service: %v", err)
+				return
+			}
+
+			// Get pregnancy details
+			var pregnancy models.Pregnancy
+			query := `SELECT id, user_id, due_date, conception_date, baby_name, partner_name, 
+					 partner_email, share_id, is_active, created_at 
+					 FROM pregnancies WHERE id = ?`
+			err = db.GetDB().QueryRow(query, pregnancyID).Scan(
+				&pregnancy.ID, &pregnancy.UserID, &pregnancy.DueDate, &pregnancy.ConceptionDate,
+				&pregnancy.BabyName, &pregnancy.PartnerName, &pregnancy.PartnerEmail,
+				&pregnancy.ShareID, &pregnancy.IsActive, &pregnancy.CreatedAt,
+			)
+			if err != nil {
+				log.Printf("Failed to get pregnancy for email notification: %v", err)
+				return
+			}
+
+			// Send notification
+			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+			defer cancel()
+
+			err = emailService.SendUpdateNotification(ctx, &update, &pregnancy)
+			if err != nil {
+				log.Printf("Failed to send update notification: %v", err)
+			} else {
+				log.Printf("Update notification sent for pregnancy %d", pregnancyID)
+			}
+		}()
 	}
 
 	w.Header().Set("Content-Type", "application/json")

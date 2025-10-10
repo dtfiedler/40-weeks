@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -8,10 +9,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"simple-go/api/db"
 	"simple-go/api/middleware"
 	"simple-go/api/models"
+	emailservice "simple-go/api/services/email"
 )
 
 type CreateVillageMemberRequest struct {
@@ -426,6 +429,28 @@ func CreateVillageMemberWithEvent(pregnancyID int, name, email, relationship str
 		if err := CreateVillagerAddedEvent(pregnancyID, name, relationship, &weekNumber); err != nil {
 			log.Printf("Failed to create villager added event: %v", err)
 		}
+	}
+
+	// Send welcome email if member has email and is being added (not from invite, as invite flow handles its own emails)
+	if !isFromInvite && email != "" {
+		go func() {
+			// Send welcome email in background to avoid blocking the response
+			emailService, err := emailservice.NewEmailService()
+			if err != nil {
+				log.Printf("Failed to initialize email service for welcome email: %v", err)
+				return
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+			defer cancel()
+
+			err = emailService.SendWelcomeEmail(ctx, member, pregnancy)
+			if err != nil {
+				log.Printf("Failed to send welcome email to %s: %v", member.Email, err)
+			} else {
+				log.Printf("Welcome email sent to %s for pregnancy %d", member.Email, pregnancyID)
+			}
+		}()
 	}
 
 	return member, nil

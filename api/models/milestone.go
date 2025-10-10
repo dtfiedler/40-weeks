@@ -118,3 +118,29 @@ func (m *Milestone) GetStatusText() string {
 		return "Past Due"
 	}
 }
+
+// PregnancyMilestone represents a milestone in the pregnancy timeline
+type PregnancyMilestone struct {
+	ID          int       `json:"id"`
+	Week        int       `json:"week"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Type        string    `json:"type"`
+	Date        time.Time `json:"date"`
+	IsPast      bool      `json:"is_past"`
+	IsCurrent   bool      `json:"is_current"`
+}
+
+// GetDisplayType returns a formatted type string for email templates
+func (pm *PregnancyMilestone) GetDisplayType() string {
+	switch pm.Type {
+	case "appointment":
+		return "Appointment"
+	case "milestone":
+		return "Milestone"
+	case "development":
+		return "Development"
+	default:
+		return "Milestone"
+	}
+}
