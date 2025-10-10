@@ -433,8 +433,24 @@
 		}
 
 		function showError(message) {
-			console.error(message);
-			// Could add a toast notification here
+			// Create a simple error toast notification positioned below nav bar
+			const toast = document.createElement('div');
+			toast.className = 'fixed top-20 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 ease-in-out';
+			toast.style.transform = 'translateX(100%)';
+			toast.textContent = message;
+			document.body.appendChild(toast);
+			
+			// Slide in animation
+			setTimeout(() => {
+				toast.style.transform = 'translateX(0)';
+			}, 10);
+			
+			setTimeout(() => {
+				toast.style.transform = 'translateX(100%)';
+				setTimeout(() => {
+					toast.remove();
+				}, 300);
+			}, 4000); // Show error messages a bit longer
 		}
 
 		// Action handlers
@@ -1135,14 +1151,23 @@
 		}
 
 		function showSuccess(message) {
-			// Create a simple toast notification
+			// Create a simple toast notification positioned below nav bar
 			const toast = document.createElement('div');
-			toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+			toast.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 ease-in-out';
+			toast.style.transform = 'translateX(100%)';
 			toast.textContent = message;
 			document.body.appendChild(toast);
 			
+			// Slide in animation
 			setTimeout(() => {
-				toast.remove();
+				toast.style.transform = 'translateX(0)';
+			}, 10);
+			
+			setTimeout(() => {
+				toast.style.transform = 'translateX(100%)';
+				setTimeout(() => {
+					toast.remove();
+				}, 300);
 			}, 3000);
 		}
 
@@ -1591,10 +1616,6 @@
 			}
 		}
 
-		function showSuccess(message) {
-			console.log('Success:', message);
-			// Could add a toast notification here
-		}
 
 		// Set up file input event listener for cover photo
 		document.addEventListener('DOMContentLoaded', function() {
