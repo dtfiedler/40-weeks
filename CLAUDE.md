@@ -234,6 +234,11 @@ The application includes a comprehensive email notification system powered by AW
 ### Development
 When `EMAIL_ENABLED=false`, emails are logged but not sent, making development safe.
 
+### Email Design Guidelines
+- **No emojis**: Keep email content professional and clean without emoji characters
+- **Consistent branding**: Use the amber/yellow color scheme (#fbbf24, #f59e0b, #d97706) across all email templates
+- **Professional tone**: Maintain a warm but professional communication style
+
 ## Marketing Notes
 
 ### Tagline Options

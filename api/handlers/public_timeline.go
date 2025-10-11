@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"log"
@@ -11,6 +12,7 @@ import (
 
 	"simple-go/api/db"
 	"simple-go/api/models"
+	"simple-go/api/services/email"
 )
 
 // PublicTimelineItem represents a public timeline item for village members
@@ -287,7 +289,22 @@ func RequestTimelineAccessHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Access request stored for pregnancy %d: %s (%s) wants to join as %s", 
 		pregnancy.ID, req.Name, req.Email, req.Relationship)
 
-	// TODO: Send email notification to pregnancy owner
+	// Send email notification to pregnancy owner
+	emailService, err := email.NewEmailService()
+	if err != nil {
+		log.Printf("Error creating email service: %v", err)
+	} else {
+		// Send notification in the background to avoid blocking the response
+		go func() {
+			ctx := context.Background()
+			err := emailService.SendAccessRequestNotification(ctx, pregnancy.ID, req.Name, req.Email, req.Relationship, req.Message)
+			if err != nil {
+				log.Printf("Error sending access request notification: %v", err)
+			} else {
+				log.Printf("Access request notification sent for pregnancy %d", pregnancy.ID)
+			}
+		}()
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})

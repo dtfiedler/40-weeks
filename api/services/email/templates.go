@@ -38,6 +38,12 @@ type TemplateData struct {
 	// Village-specific data
 	VillageMemberName string
 	InviteURL         string
+	
+	// Access request-specific data
+	RequestorEmail        string
+	RequestorRelationship string
+	RequestorMessage      string
+	DashboardURL          string
 }
 
 // UpdateNotificationTemplate generates email content for pregnancy update notifications
@@ -489,6 +495,95 @@ func (e *EmailService) renderTemplate(name, templateStr string, data *TemplateDa
 	return buf.String()
 }
 
+// AccessRequestNotificationTemplate generates email content for access request notifications
+func (e *EmailService) AccessRequestNotificationTemplate(data *TemplateData) (string, string, error) {
+	htmlTemplate := `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Access Request</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8f9fa; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #fbbf24 0%, #fbbf24 50%, #f59e0b 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header p { margin: 10px 0 0 0; font-size: 16px; color: #ffffff; opacity: 0.95; font-weight: 500; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #d97706; font-weight: 600; margin-bottom: 20px; font-size: 24px; }
+        .request-card { padding: 0; margin: 20px 0; }
+        .requester-name { font-size: 22px; font-weight: 600; color: #92400e; margin-bottom: 10px; }
+        .request-detail { font-size: 16px; line-height: 1.7; color: #333; margin-bottom: 15px; }
+        .request-message { margin: 15px 0; font-style: italic; }
+        .cta-container { text-align: center; margin: 30px 0; }
+        .cta-button { display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3); }
+        .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #e9ecef; }
+        .footer a { color: #d97706; text-decoration: none; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Access Request</h1>
+            <p>Someone wants to follow your pregnancy timeline</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hi {{.ParentNames}}!</h2>
+            <p>You have a new request from someone who would like to follow your pregnancy timeline.</p>
+            
+            <div class="request-card">
+                <div class="requester-name">{{.VillageMemberName}}</div>
+                <div class="request-detail"><strong>Email:</strong> {{.RequestorEmail}}</div>
+                <div class="request-detail"><strong>Relationship:</strong> {{.RequestorRelationship}}</div>
+                {{if .RequestorMessage}}
+                <div class="request-message">
+                    "{{.RequestorMessage}}"
+                </div>
+                {{end}}
+            </div>
+            
+            <p>You can approve or deny this request from your dashboard.</p>
+            
+            <div class="cta-container">
+                <a href="{{.DashboardURL}}" class="cta-button">Review Request</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>You can manage access requests and your village members from your dashboard.</p>
+            <p><a href="{{.DashboardURL}}">Go to Dashboard</a> | <a href="{{.TimelineURL}}">View Timeline</a></p>
+            <p>© 2024 {{.SenderName}}. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>`
+
+	textTemplate := `New Access Request
+
+Hi {{.ParentNames}}!
+
+You have a new request from someone who would like to follow your pregnancy timeline.
+
+Requester: {{.VillageMemberName}}
+Email: {{.RequestorEmail}}
+Relationship: {{.RequestorRelationship}}
+{{if .RequestorMessage}}
+Message: "{{.RequestorMessage}}"
+{{end}}
+
+You can approve or deny this request from your dashboard: {{.DashboardURL}}
+
+View your timeline: {{.TimelineURL}}
+
+---
+You can manage access requests and your village members from your dashboard.
+© 2024 {{.SenderName}}. All rights reserved.`
+
+	return e.renderTemplate("access-request-html", htmlTemplate, data), e.renderTemplate("access-request-text", textTemplate, data), nil
+}
+
 // GenerateSubject creates appropriate email subjects
 func (e *EmailService) GenerateSubject(emailType string, data *TemplateData) string {
 	switch emailType {
@@ -505,6 +600,8 @@ func (e *EmailService) GenerateSubject(emailType string, data *TemplateData) str
 		return fmt.Sprintf("Important announcement from %s", data.ParentNames)
 	case models.EmailTypeReminder:
 		return fmt.Sprintf("Weekly reminder from %s", data.ParentNames)
+	case "access_request":
+		return fmt.Sprintf("New access request for your pregnancy timeline")
 	default:
 		return fmt.Sprintf("Update from %s", data.ParentNames)
 	}

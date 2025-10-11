@@ -7,6 +7,7 @@ import (
 	"simple-go/api/config"
 	"simple-go/api/db"
 	"simple-go/api/models"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -211,4 +212,84 @@ func (e *EmailService) GetEmailStatistics(pregnancyID int) (*models.Notification
 	}
 	
 	return &summary, nil
+}
+
+// SendAccessRequestNotification sends an email notification when someone requests timeline access
+func (e *EmailService) SendAccessRequestNotification(ctx context.Context, pregnancyID int, requestorName, requestorEmail, requestorRelationship, requestorMessage string) error {
+	// Get pregnancy and owner information
+	var pregnancy struct {
+		ID          int
+		UserID      int
+		ShareID     string
+		DueDate     string
+		PartnerName *string
+		BabyName    *string
+	}
+	
+	var ownerEmail, ownerName string
+	
+	err := db.GetDB().QueryRow(`
+		SELECT p.id, p.user_id, p.share_id, p.due_date, p.partner_name, p.baby_name, u.email, u.name
+		FROM pregnancies p
+		JOIN users u ON u.id = p.user_id
+		WHERE p.id = ? AND p.is_active = TRUE
+	`, pregnancyID).Scan(
+		&pregnancy.ID,
+		&pregnancy.UserID,
+		&pregnancy.ShareID,
+		&pregnancy.DueDate,
+		&pregnancy.PartnerName,
+		&pregnancy.BabyName,
+		&ownerEmail,
+		&ownerName,
+	)
+	
+	if err != nil {
+		return fmt.Errorf("failed to get pregnancy information: %w", err)
+	}
+	
+	// Build parent names
+	parentNames := strings.Fields(strings.TrimSpace(ownerName))[0]
+	if pregnancy.PartnerName != nil && *pregnancy.PartnerName != "" {
+		parentNames = parentNames + " & " + strings.Fields(strings.TrimSpace(*pregnancy.PartnerName))[0]
+	}
+	
+	// Build URLs
+	timelineURL := fmt.Sprintf("https://40weeks.xyz/timeline/%s", pregnancy.ShareID)
+	dashboardURL := "https://40weeks.xyz/manage/village"
+	
+	// Build template data
+	templateData := &TemplateData{
+		SenderName:            e.config.SenderName,
+		RecipientName:         ownerName,
+		PregnancyID:           pregnancyID,
+		ParentNames:           parentNames,
+		DueDate:               pregnancy.DueDate,
+		TimelineURL:           timelineURL,
+		DashboardURL:          dashboardURL,
+		VillageMemberName:     requestorName,
+		RequestorEmail:        requestorEmail,
+		RequestorRelationship: requestorRelationship,
+		RequestorMessage:      requestorMessage,
+	}
+	
+	// Generate email content
+	htmlContent, textContent, err := e.AccessRequestNotificationTemplate(templateData)
+	if err != nil {
+		return fmt.Errorf("failed to generate email content: %w", err)
+	}
+	
+	// Create email request
+	emailRequest := &EmailRequest{
+		ToEmail:     ownerEmail,
+		ToName:      ownerName,
+		Subject:     e.GenerateSubject("access_request", templateData),
+		HTMLContent: htmlContent,
+		TextContent: textContent,
+		EmailType:   "access_request",
+		PregnancyID: pregnancyID,
+	}
+	
+	// Send the email
+	return e.SendEmail(ctx, emailRequest)
 }
