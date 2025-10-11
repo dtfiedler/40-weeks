@@ -170,6 +170,33 @@ func VerifyTimelineAccessHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check if email is the pregnancy owner
+	var ownerEmail string
+	err = db.GetDB().QueryRow(`
+		SELECT u.email 
+		FROM users u 
+		WHERE u.id = ?
+	`, pregnancy.UserID).Scan(&ownerEmail)
+	
+	if err != nil {
+		log.Printf("Error getting pregnancy owner email: %v", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if user is pregnancy owner or partner
+	isOwner := strings.EqualFold(req.Email, ownerEmail)
+	isPartner := pregnancy.PartnerEmail != nil && strings.EqualFold(req.Email, *pregnancy.PartnerEmail)
+
+	if isOwner || isPartner {
+		response := VerifyAccessResponse{
+			HasAccess: true,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
 	// Check if email belongs to a village member
 	var count int
 	err = db.GetDB().QueryRow(`
