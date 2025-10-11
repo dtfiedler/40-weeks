@@ -231,7 +231,7 @@
 
 	<script>
 		let currentOffset = 0;
-		const limit = 10;
+		const limit = 100;
 		let hasMoreUpdates = true;
 		let userEmail = null;
 		let isSignedIn = false;
@@ -430,11 +430,22 @@
 		// Load timeline on page load
 		async function loadTimeline(append = false) {
 			try {
-				const response = await fetch(`/timeline/${shareId}?limit=${limit}&offset=${currentOffset}`);
+				if (!userEmail) {
+					showError('Email verification required');
+					return;
+				}
+
+				const response = await fetch(`/timeline/${shareId}?limit=${limit}&offset=${currentOffset}&email=${encodeURIComponent(userEmail)}`);
 				
 				if (!response.ok) {
 					if (response.status === 404) {
 						showError('Pregnancy not found. Please check your link.');
+						return;
+					} else if (response.status === 403) {
+						showError('Access denied. You may not have permission to view this timeline.');
+						return;
+					} else if (response.status === 400) {
+						showError('Email verification required');
 						return;
 					}
 					showError('Failed to load timeline');
@@ -732,9 +743,6 @@
 				loadTimeline(true);
 			}
 		});
-
-		// Load timeline on page load
-		loadTimeline();
 	</script>
 
 	<!-- Photo Modal -->
