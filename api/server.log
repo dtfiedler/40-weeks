@@ -10,3 +10,7 @@ Demo credentials: admin/password
 2025/10/11 08:17:22 Access request stored for pregnancy 2: test (dfieds913+test@gmail.com) wants to join as father
 2025/10/11 08:17:31 Access request approved: test (dfieds913+test@gmail.com) added to pregnancy 2 village
 2025/10/11 08:17:49 Created event: villager_told for pregnancy 2
+2025/10/11 08:17:54 GetPregnancyHandler called with method: GET, path: /api/pregnancy/current
+2025/10/11 08:17:54 Looking for pregnancy for user ID: 5
+2025/10/11 08:18:26 GetPregnancyHandler called with method: GET, path: /api/pregnancy/current
+2025/10/11 08:18:26 Looking for pregnancy for user ID: 5
