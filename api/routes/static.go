@@ -96,10 +96,10 @@ func SharePageHandler(w http.ResponseWriter, r *http.Request) {
 	
 	// Build title and description
 	title := "Join " + parentNames + "'s Pregnancy Village - 40Weeks"
-	description := parentNames + " are expecting! Join their village to follow their pregnancy journey and get updates."
+	description := parentNames + " are expecting! Join their village to follow their pregnancy and get updates."
 	
 	// Replace existing meta tags
-	htmlStr = strings.Replace(htmlStr, "<title>Join Pregnancy Village - 40Weeks</title>", 
+	htmlStr = strings.Replace(htmlStr, "<title>Join Pregnancy - 40Weeks</title>", 
 		"<title>"+template.HTMLEscapeString(title)+"</title>", 1)
 	
 	// Add Open Graph and Twitter meta tags after the title

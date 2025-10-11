@@ -25,6 +25,24 @@ type PublicTimelineItem struct {
 	PregnancyID int                  `json:"pregnancy_id"`
 }
 
+// VerifyAccessRequest represents a request to verify email access
+type VerifyAccessRequest struct {
+	Email string `json:"email"`
+}
+
+// VerifyAccessResponse represents the response for access verification
+type VerifyAccessResponse struct {
+	HasAccess bool `json:"has_access"`
+}
+
+// AccessRequest represents a request for timeline access
+type AccessRequest struct {
+	Email        string `json:"email"`
+	Name         string `json:"name"`
+	Relationship string `json:"relationship"`
+	Message      string `json:"message"`
+}
+
 // PublicTimelineHandler returns shared updates for a pregnancy via share ID
 func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -104,6 +122,175 @@ func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			"current_week":  pregnancy.GetCurrentWeek(),
 		},
 	})
+}
+
+// VerifyTimelineAccessHandler checks if an email has access to view the timeline
+func VerifyTimelineAccessHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract share ID from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/api/timeline/")
+	parts := strings.Split(path, "/")
+	if len(parts) < 2 || parts[1] != "verify-access" {
+		http.Error(w, "Invalid URL path", http.StatusBadRequest)
+		return
+	}
+	shareID := parts[0]
+
+	if shareID == "" {
+		http.Error(w, "Invalid share ID", http.StatusBadRequest)
+		return
+	}
+
+	// Parse request body
+	var req VerifyAccessRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Email == "" {
+		http.Error(w, "Email is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get pregnancy by share ID
+	pregnancy, err := GetPregnancyByShareID(shareID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Pregnancy not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if email belongs to a village member
+	var count int
+	err = db.GetDB().QueryRow(`
+		SELECT COUNT(*) 
+		FROM village_members 
+		WHERE pregnancy_id = ? AND LOWER(email) = LOWER(?)
+	`, pregnancy.ID, req.Email).Scan(&count)
+	
+	if err != nil {
+		log.Printf("Error checking village member access: %v", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	response := VerifyAccessResponse{
+		HasAccess: count > 0,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// RequestTimelineAccessHandler handles access requests from non-village members
+func RequestTimelineAccessHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract share ID from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/api/timeline/")
+	parts := strings.Split(path, "/")
+	if len(parts) < 2 || parts[1] != "request-access" {
+		http.Error(w, "Invalid URL path", http.StatusBadRequest)
+		return
+	}
+	shareID := parts[0]
+
+	if shareID == "" {
+		http.Error(w, "Invalid share ID", http.StatusBadRequest)
+		return
+	}
+
+	// Parse request body
+	var req AccessRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Email == "" || req.Name == "" || req.Relationship == "" {
+		http.Error(w, "Email, name, and relationship are required", http.StatusBadRequest)
+		return
+	}
+
+	// Get pregnancy by share ID
+	pregnancy, err := GetPregnancyByShareID(shareID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Pregnancy not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Check if they're already in the village
+	var count int
+	err = db.GetDB().QueryRow(`
+		SELECT COUNT(*) 
+		FROM village_members 
+		WHERE pregnancy_id = ? AND LOWER(email) = LOWER(?)
+	`, pregnancy.ID, req.Email).Scan(&count)
+	
+	if err != nil {
+		log.Printf("Error checking existing village member: %v", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if count > 0 {
+		http.Error(w, "You are already a member of this village", http.StatusBadRequest)
+		return
+	}
+
+	// Check if there's already a pending request from this email
+	var existingRequestCount int
+	err = db.GetDB().QueryRow(`
+		SELECT COUNT(*) 
+		FROM access_requests 
+		WHERE pregnancy_id = ? AND LOWER(email) = LOWER(?) AND status = 'pending'
+	`, pregnancy.ID, req.Email).Scan(&existingRequestCount)
+	
+	if err != nil {
+		log.Printf("Error checking existing access request: %v", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if existingRequestCount > 0 {
+		http.Error(w, "You already have a pending access request for this pregnancy", http.StatusBadRequest)
+		return
+	}
+
+	// Store the access request in the database
+	_, err = db.GetDB().Exec(`
+		INSERT INTO access_requests (pregnancy_id, email, name, relationship, message, status, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+	`, pregnancy.ID, req.Email, req.Name, req.Relationship, req.Message)
+
+	if err != nil {
+		log.Printf("Error storing access request: %v", err)
+		http.Error(w, "Failed to store access request", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Access request stored for pregnancy %d: %s (%s) wants to join as %s", 
+		pregnancy.ID, req.Name, req.Email, req.Relationship)
+
+	// TODO: Send email notification to pregnancy owner
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
 }
 
 // getPublicTimelineItems fetches only shared updates for public viewing

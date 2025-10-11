@@ -154,7 +154,7 @@ func CreatePregnancyAnnouncedEvent(pregnancyID int, userID int, weekNumber *int)
 	return eventService.CreateEvent(
 		pregnancyID,
 		models.EventPregnancyAnnounced,
-		"Pregnancy journey begins! 🎉",
+		"Pregnancy begins! 🎉",
 		"Your pregnancy tracking has been set up and your journey begins!",
 		weekNumber,
 		&userID,

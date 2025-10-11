@@ -1,0 +1,12 @@
+2025/10/11 08:13:29 Database initialized successfully with migrations
+Server starting on port :8080
+Public routes: /health, /login, /register, /api/login, /api/register
+Protected routes: /api/users, /api/profile, /api/pregnancy, /api/pregnancy/current, /api/access-requests, /app, /dashboard, /pregnancy-setup, /village-setup, /admin
+Static files: /static/*
+Demo credentials: admin/password
+2025/10/11 08:14:11 Access request approved: test (dfieds913+test@gmail.com) added to pregnancy 2 village
+2025/10/11 08:14:53 Access request stored for pregnancy 2: dylan (dfieds913+test@gmail.com) wants to join as father
+2025/10/11 08:16:08 Access request approved: dylan (dfieds913+test@gmail.com) added to pregnancy 2 village
+2025/10/11 08:17:22 Access request stored for pregnancy 2: test (dfieds913+test@gmail.com) wants to join as father
+2025/10/11 08:17:31 Access request approved: test (dfieds913+test@gmail.com) added to pregnancy 2 village
+2025/10/11 08:17:49 Created event: villager_told for pregnancy 2

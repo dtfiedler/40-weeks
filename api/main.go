@@ -38,7 +38,7 @@ func main() {
 	port := ":" + config.AppConfig.ServerPort
 	fmt.Printf("Server starting on port %s\n", port)
 	fmt.Println("Public routes: /health, /login, /register, /api/login, /api/register")
-	fmt.Println("Protected routes: /api/users, /api/profile, /api/pregnancy, /api/pregnancy/current, /app, /dashboard, /pregnancy-setup, /village-setup, /admin")
+	fmt.Println("Protected routes: /api/users, /api/profile, /api/pregnancy, /api/pregnancy/current, /api/access-requests, /app, /dashboard, /pregnancy-setup, /village-setup, /admin")
 	fmt.Println("Static files: /static/*")
 	fmt.Println("Demo credentials: admin/password")
 
@@ -66,9 +66,23 @@ func setupRoutes() {
 	http.HandleFunc("/api/pregnancy/join/", handlers.JoinVillageFromInviteHandler)
 	http.HandleFunc("/api/village-members", middleware.AuthMiddleware(villageHandler))
 	http.HandleFunc("/api/village-members/bulk", middleware.AuthMiddleware(handlers.CreateVillageMembersBulkHandler))
+	http.HandleFunc("/api/village-members/access-requests", middleware.AuthMiddleware(handlers.GetAccessRequestsHandler))
+	http.HandleFunc("/api/village-members/access-requests/", middleware.AuthMiddleware(handlers.ManageAccessRequestHandler))
 	http.HandleFunc("/api/village-members/", middleware.AuthMiddleware(villageMemberHandler))
+	
 	http.HandleFunc("/api/timeline", middleware.AuthMiddleware(handlers.GetCombinedTimelineHandler))
 	http.HandleFunc("/timeline/", handlers.PublicTimelineHandler)
+	// Timeline API routes - register specific patterns
+	http.HandleFunc("/api/timeline/", func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		if strings.Contains(path, "/verify-access") {
+			handlers.VerifyTimelineAccessHandler(w, r)
+		} else if strings.Contains(path, "/request-access") {
+			handlers.RequestTimelineAccessHandler(w, r)
+		} else {
+			http.Error(w, "Not found", http.StatusNotFound)
+		}
+	})
 	http.HandleFunc("/api/milestones", middleware.AuthMiddleware(handlers.GetMilestonesHandler))
 	http.HandleFunc("/api/updates", middleware.AuthMiddleware(updateHandler))
 	http.HandleFunc("/api/updates/", middleware.AuthMiddleware(updateDetailHandler))
@@ -119,6 +133,12 @@ func pregnancyHandler(w http.ResponseWriter, r *http.Request) {
 
 // villageHandler routes village member requests
 func villageHandler(w http.ResponseWriter, r *http.Request) {
+	// Check if this is an access-requests sub-path
+	if strings.HasSuffix(r.URL.Path, "/access-requests") || strings.HasSuffix(r.URL.Path, "/access-requests/") {
+		handlers.GetAccessRequestsHandler(w, r)
+		return
+	}
+	
 	switch r.Method {
 	case http.MethodGet:
 		handlers.GetVillageMembersHandler(w, r)
@@ -261,11 +281,11 @@ func timelinePageHandler(w http.ResponseWriter, r *http.Request) {
 	// Replace placeholders with actual data
 	htmlStr := string(htmlContent)
 	htmlStr = strings.ReplaceAll(htmlStr, `<title>Pregnancy Timeline - 40Weeks</title>`, fmt.Sprintf(`<title>%s</title>`, title))
-	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="description" content="Follow the pregnancy journey">`, fmt.Sprintf(`<meta name="description" content="%s">`, description))
+	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="description" content="Follow their pregnancy">`, fmt.Sprintf(`<meta name="description" content="%s">`, description))
 	htmlStr = strings.ReplaceAll(htmlStr, `<meta property="og:title" content="Pregnancy Timeline - 40Weeks">`, fmt.Sprintf(`<meta property="og:title" content="%s">`, title))
-	htmlStr = strings.ReplaceAll(htmlStr, `<meta property="og:description" content="Follow the pregnancy journey">`, fmt.Sprintf(`<meta property="og:description" content="%s">`, description))
+	htmlStr = strings.ReplaceAll(htmlStr, `<meta property="og:description" content="Follow their pregnancy">`, fmt.Sprintf(`<meta property="og:description" content="%s">`, description))
 	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="twitter:title" content="Pregnancy Timeline - 40Weeks">`, fmt.Sprintf(`<meta name="twitter:title" content="%s">`, title))
-	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="twitter:description" content="Follow the pregnancy journey">`, fmt.Sprintf(`<meta name="twitter:description" content="%s">`, description))
+	htmlStr = strings.ReplaceAll(htmlStr, `<meta name="twitter:description" content="Follow their pregnancy">`, fmt.Sprintf(`<meta name="twitter:description" content="%s">`, description))
 	
 	// Add cover photo meta tags if available
 	if coverPhotoURL != "" {
@@ -316,5 +336,25 @@ func coverPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		handlers.DeleteCoverPhotoHandler(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// timelineAPIHandler routes timeline API requests for email verification and access requests
+func timelineAPIHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the path to determine which handler to use
+	path := strings.TrimPrefix(r.URL.Path, "/api/timeline/")
+	
+	// Only handle timeline-specific routes, not other API routes
+	if strings.Contains(path, "verify-access") || strings.Contains(path, "request-access") {
+		if strings.HasSuffix(path, "/verify-access") {
+			handlers.VerifyTimelineAccessHandler(w, r)
+		} else if strings.HasSuffix(path, "/request-access") {
+			handlers.RequestTimelineAccessHandler(w, r)
+		} else {
+			http.Error(w, "Not found", http.StatusNotFound)
+		}
+	} else {
+		// This is not a timeline API request, return 404
+		http.Error(w, "Not found", http.StatusNotFound)
 	}
 }

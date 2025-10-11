@@ -329,39 +329,7 @@
 		}
 
 		function calculateVillageCount(members) {
-			let totalCount = 0;
-			
-			// Count each member based on relationship type
-			// Parents, friends, and in-laws count as 2 people
-			const doubleCountRelationships = [
-				'parents',        // Parents (both)
-				'in-laws',        // In-laws (both)  
-				'friends',        // Friends
-				'siblings'        // Siblings
-			];
-			
-			// Individual relationships that count as 2 (representing couples)
-			const coupleRelationships = [
-				'mother',         // Mother (represents both parents if father not separately added)
-				'father',         // Father (represents both parents if mother not separately added)
-				'mother-in-law',  // Mother-in-law (represents both in-laws if father-in-law not separately added)
-				'father-in-law',  // Father-in-law (represents both in-laws if mother-in-law not separately added)
-				'friend'          // Friend (could represent a couple)
-			];
-			
-			members.forEach(member => {
-				const relationship = member.relationship;
-				
-				// Check if this relationship should count as 2
-				if (doubleCountRelationships.includes(relationship) || 
-				    coupleRelationships.includes(relationship)) {
-					totalCount += 2;
-				} else {
-					totalCount += 1;
-				}
-			});
-			
-			return totalCount;
+			return members.length;
 		}
 
 		function displayVillageCount(members) {
@@ -678,7 +646,7 @@
 			if (events.length === 0 && !append) {
 				container.innerHTML = `
 					<div class="text-center py-8">
-						<div class="text-gray-500">Your pregnancy journey will appear here as you reach milestones and your village grows!</div>
+						<div class="text-gray-500">Your pregnancy will appear here as you reach milestones and your village grows!</div>
 					</div>
 				`;
 				return;

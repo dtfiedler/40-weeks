@@ -3,15 +3,15 @@
 <head>
 	<title>Pregnancy Timeline - 40Weeks</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="Follow the pregnancy journey">
+	<meta name="description" content="Follow their pregnancy">
 	
 	<!-- Dynamic meta tags (will be updated by JavaScript) -->
 	<meta property="og:title" content="Pregnancy Timeline - 40Weeks">
-	<meta property="og:description" content="Follow the pregnancy journey">
+	<meta property="og:description" content="Follow their pregnancy">
 	<meta property="og:type" content="website">
 	<meta name="twitter:card" content="summary_large_image">
 	<meta name="twitter:title" content="Pregnancy Timeline - 40Weeks">
-	<meta name="twitter:description" content="Follow the pregnancy journey">
+	<meta name="twitter:description" content="Follow their pregnancy">
 	<script src="https://cdn.tailwindcss.com"></script>
 	<script>
 		tailwind.config = {
@@ -73,8 +73,8 @@
 	</style>
 </head>
 <body class="min-h-screen bg-gray-50">
-	<!-- Header -->
-	<header class="bg-white border-b border-gray-200">
+	<!-- Header (hidden until access is verified) -->
+	<header id="pregnancyHeader" class="hidden bg-white border-b border-gray-200">
 		<div class="max-w-4xl mx-auto px-4 py-6">
 			<div class="text-center">
 				<h1 id="pregnancyTitle" class="text-3xl font-bold text-gray-900 font-serif">Pregnancy Journey</h1>
@@ -83,8 +83,136 @@
 		</div>
 	</header>
 
+	<!-- Email Verification Form -->
+	<div id="emailVerification" class="min-h-screen flex items-center justify-center px-4">
+		<div class="max-w-md w-full">
+		<div class="card p-6">
+			<div class="text-center mb-6">
+				<div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+					<svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+					</svg>
+				</div>
+				<h2 class="text-2xl font-bold text-gray-900 mb-2 font-serif">Request to Follow</h2>
+				<p class="text-gray-600">Please enter your email to view this pregnancy timeline</p>
+			</div>
+			
+			<form id="emailVerificationForm" class="space-y-4">
+				<div>
+					<label for="emailInput" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+					<input 
+						type="email" 
+						id="emailInput" 
+						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+						placeholder="your@email.com"
+						required
+					>
+				</div>
+				
+				<button 
+					type="submit" 
+					class="w-full bg-primary-500 text-white py-2 px-4 rounded-md hover:bg-primary-600 transition-colors font-medium"
+				>
+					Continue
+				</button>
+			</form>
+			
+			<div id="verificationError" class="hidden mt-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Request Access Form -->
+	<div id="requestAccess" class="hidden min-h-screen flex items-center justify-center px-4">
+		<div class="max-w-md w-full">
+		<div class="card p-6">
+			<div class="text-center mb-6">
+				<div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+					<svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+					</svg>
+				</div>
+				<h2 class="text-2xl font-bold text-gray-900 mb-2 font-serif">Access Required</h2>
+				<p class="text-gray-600">You're not currently part of this pregnancy village. Request access to view updates!</p>
+			</div>
+			
+			<form id="requestAccessForm" class="space-y-4">
+				<div>
+					<label for="requestName" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+					<input 
+						type="text" 
+						id="requestName" 
+						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+						placeholder="Your name"
+						required
+					>
+				</div>
+				
+				<div>
+					<label for="requestRelationship" class="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
+					<select id="requestRelationship" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" required>
+						<option value="">Select relationship</option>
+						<option value="mother">Mother</option>
+						<option value="father">Father</option>
+						<option value="mother-in-law">Mother-in-law</option>
+						<option value="father-in-law">Father-in-law</option>
+						<option value="in-laws">In-laws (both)</option>
+						<option value="sister">Sister</option>
+						<option value="brother">Brother</option>
+						<option value="coworker">Coworker</option>
+						<option value="other">Other</option>
+					</select>
+				</div>
+				
+				<div>
+					<label for="requestMessage" class="block text-sm font-medium text-gray-700 mb-1">Message (Optional)</label>
+					<textarea 
+						id="requestMessage" 
+						rows="3"
+						class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500" 
+						placeholder="Hi! I'd love to follow your pregnancy journey..."
+					></textarea>
+				</div>
+				
+				<button 
+					type="submit" 
+					class="w-full bg-primary-500 text-white py-2 px-4 rounded-md hover:bg-primary-600 transition-colors font-medium"
+				>
+					Request Access
+				</button>
+				
+				<button 
+					type="button" 
+					onclick="goBackToEmailVerification()"
+					class="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors font-medium"
+				>
+					Use Different Email
+				</button>
+			</form>
+			
+			<div id="requestError" class="hidden mt-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Access Request Sent -->
+	<div id="requestSent" class="hidden min-h-screen flex items-center justify-center px-4">
+		<div class="max-w-md w-full">
+			<div class="card p-6 text-center">
+				<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+					<svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+					</svg>
+				</div>
+				<h2 class="text-2xl font-bold text-gray-900 mb-2 font-serif">Request Sent!</h2>
+				<p class="text-gray-600 mb-4">Your access request has been sent. The pregnancy owner will be notified and can add you to their village.</p>
+				<p class="text-sm text-gray-500">You'll receive an email if you're added to the village.</p>
+			</div>
+		</div>
+	</div>
+
 	<!-- Main Content -->
-	<main class="max-w-4xl mx-auto px-4 py-8">
+	<main id="timelineContent" class="hidden max-w-4xl mx-auto px-4 py-8">
 		<!-- Timeline -->
 		<div class="space-y-6" id="timelineContainer">
 			<div class="text-center py-8">
@@ -104,10 +232,199 @@
 		let currentOffset = 0;
 		const limit = 10;
 		let hasMoreUpdates = true;
+		let userEmail = null;
+		let isSignedIn = false;
 
 		// Get share ID from URL
 		const pathParts = window.location.pathname.split('/');
 		const shareId = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+
+		// Check authentication and cached email on page load
+		async function initializePage() {
+			// Check if user is signed in
+			const token = localStorage.getItem('jwt_token');
+			if (token) {
+				try {
+					const response = await fetch('/api/profile', {
+						headers: {
+							'Authorization': 'Bearer ' + token
+						}
+					});
+					
+					if (response.ok) {
+						const profile = await response.json();
+						userEmail = profile.email;
+						isSignedIn = true;
+						console.log('User is signed in:', userEmail);
+						// Skip email verification for signed-in users
+						verifyEmailAccess(userEmail);
+						return;
+					}
+				} catch (err) {
+					console.log('Not signed in or token invalid');
+				}
+			}
+
+			// Check for cached email
+			const cachedEmail = localStorage.getItem('timeline_email');
+			if (cachedEmail) {
+				userEmail = cachedEmail;
+				document.getElementById('emailInput').value = cachedEmail;
+				console.log('Using cached email:', cachedEmail);
+				// Automatically verify cached email
+				verifyEmailAccess(cachedEmail);
+				return;
+			}
+
+			// Show email verification form if no cached email or signed-in user
+			console.log('Showing email verification form');
+		}
+
+		// Email verification form handler
+		document.addEventListener('DOMContentLoaded', function() {
+			document.getElementById('emailVerificationForm').addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const email = document.getElementById('emailInput').value.trim();
+				
+				if (!email) {
+					showVerificationError('Please enter your email address');
+					return;
+				}
+
+				// Cache the email
+				localStorage.setItem('timeline_email', email);
+				userEmail = email;
+
+				verifyEmailAccess(email);
+			});
+
+			document.getElementById('requestAccessForm').addEventListener('submit', async (e) => {
+				e.preventDefault();
+				const name = document.getElementById('requestName').value.trim();
+				const relationship = document.getElementById('requestRelationship').value;
+				const message = document.getElementById('requestMessage').value.trim();
+
+				if (!name || !relationship) {
+					showRequestError('Please fill in all required fields');
+					return;
+				}
+
+				await submitAccessRequest(name, relationship, message);
+			});
+
+			// Initialize the page
+			initializePage();
+		});
+
+		// Verify if email has access to the timeline
+		async function verifyEmailAccess(email) {
+			try {
+				const response = await fetch(`/api/timeline/${shareId}/verify-access`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ email: email })
+				});
+
+				if (response.ok) {
+					const result = await response.json();
+					if (result.has_access) {
+						// User has access, show timeline
+						showTimeline();
+					} else {
+						// User needs to request access
+						showRequestAccessForm();
+					}
+				} else if (response.status === 404) {
+					showVerificationError('Pregnancy not found. Please check your link.');
+				} else {
+					showVerificationError('Unable to verify access. Please try again.');
+				}
+			} catch (err) {
+				console.error('Error verifying access:', err);
+				showVerificationError('Network error. Please try again.');
+			}
+		}
+
+		// Submit access request
+		async function submitAccessRequest(name, relationship, message) {
+			try {
+				const response = await fetch(`/api/timeline/${shareId}/request-access`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						email: userEmail,
+						name: name,
+						relationship: relationship,
+						message: message
+					})
+				});
+
+				if (response.ok) {
+					showRequestSent();
+				} else {
+					const errorText = await response.text();
+					showRequestError(errorText || 'Failed to submit request. Please try again.');
+				}
+			} catch (err) {
+				console.error('Error submitting access request:', err);
+				showRequestError('Network error. Please try again.');
+			}
+		}
+
+		// UI state management
+		function showTimeline() {
+			document.getElementById('emailVerification').classList.add('hidden');
+			document.getElementById('requestAccess').classList.add('hidden');
+			document.getElementById('requestSent').classList.add('hidden');
+			document.getElementById('pregnancyHeader').classList.remove('hidden');
+			document.getElementById('timelineContent').classList.remove('hidden');
+			loadTimeline();
+		}
+
+		function showRequestAccessForm() {
+			document.getElementById('emailVerification').classList.add('hidden');
+			document.getElementById('requestAccess').classList.remove('hidden');
+			document.getElementById('requestSent').classList.add('hidden');
+			document.getElementById('pregnancyHeader').classList.add('hidden');
+			document.getElementById('timelineContent').classList.add('hidden');
+		}
+
+		function showRequestSent() {
+			document.getElementById('emailVerification').classList.add('hidden');
+			document.getElementById('requestAccess').classList.add('hidden');
+			document.getElementById('requestSent').classList.remove('hidden');
+			document.getElementById('pregnancyHeader').classList.add('hidden');
+			document.getElementById('timelineContent').classList.add('hidden');
+		}
+
+		function goBackToEmailVerification() {
+			// Clear cached email
+			localStorage.removeItem('timeline_email');
+			userEmail = null;
+			document.getElementById('emailInput').value = '';
+			
+			document.getElementById('emailVerification').classList.remove('hidden');
+			document.getElementById('requestAccess').classList.add('hidden');
+			document.getElementById('requestSent').classList.add('hidden');
+			document.getElementById('pregnancyHeader').classList.add('hidden');
+			document.getElementById('timelineContent').classList.add('hidden');
+		}
+
+		function showVerificationError(message) {
+			const errorDiv = document.getElementById('verificationError');
+			errorDiv.textContent = message;
+			errorDiv.classList.remove('hidden');
+		}
+
+		function showRequestError(message) {
+			const errorDiv = document.getElementById('requestError');
+			errorDiv.textContent = message;
+			errorDiv.classList.remove('hidden');
+		}
 
 		// Load timeline on page load
 		async function loadTimeline(append = false) {

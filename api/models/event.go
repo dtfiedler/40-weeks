@@ -15,7 +15,7 @@ type PregnancyEvent struct {
 	CreatedBy      *int      `json:"created_by"`
 }
 
-// Event type constants for meaningful pregnancy journey events
+// Event type constants for meaningful pregnancy events
 const (
 	EventPregnancyAnnounced   = "pregnancy_announced"    // When pregnancy first created
 	EventVillagerJoined       = "villager_joined"        // Someone joins village via invite
