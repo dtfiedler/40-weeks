@@ -27,6 +27,7 @@ type TemplateData struct {
 	UpdateWeek      int
 	UpdateDate      string
 	UpdatePhotos    []string
+	FirstPhotoURL   string
 	
 	// Milestone-specific data
 	Milestone        *models.PregnancyMilestone
@@ -57,26 +58,34 @@ func (e *EmailService) UpdateNotificationTemplate(data *TemplateData) (string, s
     <title>New Pregnancy Update</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8f9fa; }
-        .container { max-width: 600px; margin: 0 auto; background-color: #141212ff; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #fbbf24 0%, #fbbf24 50%, #f59e0b 100%); color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header p { margin: 10px 0 0 0; font-size: 16px; color: #ffffff; opacity: 0.95; font-weight: 500; }
         .content { padding: 40px 30px; }
-        .update-card { border: 1px solid #e9ecef; border-radius: 8px; padding: 25px; margin: 20px 0; background-color: #f8f9fa; }
-        .week-badge { background-color: #667eea; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; margin-bottom: 15px; }
-        .update-title { font-size: 22px; font-weight: 600; color: #333; margin-bottom: 10px; }
-        .update-content { font-size: 16px; line-height: 1.7; color: #555; margin-bottom: 20px; }
-        .photos-section { margin-top: 20px; }
-        .photo-count { color: #667eea; font-weight: 600; }
-        .cta-button { display: inline-block; background-color: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: 600; margin: 20px 0; }
+        .content h2 { color: #d97706; font-weight: 600; margin-bottom: 20px; font-size: 24px; }
+        .update-card { padding: 0; margin: 20px 0; }
+        .update-week { font-size: 14px; color: #666; margin-bottom: 10px; }
+        .update-title { font-size: 22px; font-weight: 600; color: #333; margin-bottom: 15px; }
+        .update-content { font-size: 16px; line-height: 1.7; color: #555; margin: 20px 0; padding-left: 20px; border-left: 3px solid #e5e7eb; font-style: italic; white-space: pre-wrap; }
+        .update-date { font-size: 14px; color: #b45309; font-weight: 500; }
+        .photo-container { margin-top: 20px; text-align: center; }
+        .photo-container img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        .photo-caption { font-size: 14px; color: #666; margin-top: 10px; font-style: italic; }
+        .photos-note { color: #d97706; font-weight: 600; margin-top: 15px; }
+        .cta-container { text-align: center; margin: 30px 0; }
+        .cta-button { display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #fbbf24 50%, #f59e0b 100%); color: #ffffff !important; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3); }
         .footer { background-color: #f8f9fa; padding: 30px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #e9ecef; }
-        .footer a { color: #667eea; text-decoration: none; }
+        .footer a { color: #d97706; text-decoration: none; font-weight: 500; }
+        .pregnancy-info { text-align: center; margin: 20px 0; }
+        .pregnancy-info p { margin: 5px 0; font-weight: 600; color: #333; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>{{.SenderName}}</h1>
-            <p>New pregnancy update from {{.ParentNames}}</p>
+            <h1>New Update from {{.ParentNames}}</h1>
+            <p>A new update has been shared</p>
         </div>
         
         <div class="content">
@@ -84,20 +93,31 @@ func (e *EmailService) UpdateNotificationTemplate(data *TemplateData) (string, s
             <p>{{.ParentNames}} just shared a new update from their pregnancy.</p>
             
             <div class="update-card">
-                {{if .UpdateWeek}}<div class="week-badge">Week {{.UpdateWeek}}</div>{{end}}
+                {{if .UpdateWeek}}<div class="update-week">Week {{.UpdateWeek}}</div>{{end}}
                 <div class="update-title">{{.UpdateTitle}}</div>
-                <div class="update-content">{{.UpdateContent}}</div>
-                <div class="update-date">Posted on {{.UpdateDate}}</div>
-                {{if .UpdatePhotos}}
-                <div class="photos-section">
-                    <span class="photo-count">📸 {{len .UpdatePhotos}} photo(s) included</span>
+                <div class="update-content">"{{.UpdateContent}}"</div>
+                {{if .FirstPhotoURL}}
+                <div class="photo-container">
+                    <img src="{{.FirstPhotoURL}}" alt="Update photo">
+                    {{if .UpdatePhotos}}
+                        {{if gt (len .UpdatePhotos) 1}}
+                        <p class="photos-note">+ {{minus (len .UpdatePhotos) 1}} more photo(s) on the timeline</p>
+                        {{end}}
+                    {{end}}
                 </div>
+                {{else if .UpdatePhotos}}
+                <div class="photos-note" style="margin-top: 15px;">📸 {{len .UpdatePhotos}} photo(s) included - view them on the timeline!</div>
                 {{end}}
             </div>
             
-            <p>Due date: <strong>{{.DueDate}}</strong> • Currently at week <strong>{{.CurrentWeek}}</strong></p>
+            <div class="pregnancy-info">
+                <p>Due date: <strong>{{.DueDate}}</strong></p>
+                <p>Currently at week <strong>{{.CurrentWeek}}</strong></p>
+            </div>
             
-            <a href="{{.TimelineURL}}" class="cta-button">View Full Timeline</a>
+            <div class="cta-container">
+                <a href="{{.TimelineURL}}" class="cta-button">View Timeline</a>
+            </div>
         </div>
         
         <div class="footer">
@@ -109,22 +129,21 @@ func (e *EmailService) UpdateNotificationTemplate(data *TemplateData) (string, s
 </body>
 </html>`
 
-	textTemplate := `New post from {{.ParentNames}}
+	textTemplate := `New update from {{.ParentNames}}
 
 Hi {{.RecipientName}}!
 
-{{.ParentNames}} just shared a new update!
+{{.ParentNames}} just shared a new update.
 
 {{if .UpdateWeek}}Week {{.UpdateWeek}}: {{end}}{{.UpdateTitle}}
 
 {{.UpdateContent}}
-
-Posted on {{.UpdateDate}}
-{{if .UpdatePhotos}}📸 {{len .UpdatePhotos}} photo(s) included{{end}}
+{{if .UpdatePhotos}}
+📸 {{len .UpdatePhotos}} photo(s) included - view them on the timeline!{{end}}
 
 Currently at week {{.CurrentWeek}}, due {{.DueDate}}.
 
-View the full timeline: {{.TimelineURL}}
+View the timeline: {{.TimelineURL}}
 
 ---
 You're receiving this because you're part of {{.ParentNames}}'s pregnancy village.
@@ -477,6 +496,9 @@ func (e *EmailService) renderTemplate(name, templateStr string, data *TemplateDa
 	// Create template with custom functions
 	funcMap := template.FuncMap{
 		"contains": strings.Contains,
+		"minus": func(a, b int) int {
+			return a - b
+		},
 	}
 	
 	tmpl, err := template.New(name).Funcs(funcMap).Parse(templateStr)

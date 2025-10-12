@@ -6,6 +6,7 @@ import (
 	"log"
 	"simple-go/api/db"
 	"simple-go/api/models"
+	"strings"
 	"time"
 )
 
@@ -27,11 +28,18 @@ func (e *EmailService) SendUpdateNotification(ctx context.Context, update *model
 		return nil
 	}
 
-	// Get update photos count
-	photoCount := e.getUpdatePhotoCount(update.ID)
+	// Get update photos
+	photos := e.getUpdatePhotos(update.ID)
+	photoCount := len(photos)
 
 	// Generate timeline URL
 	timelineURL := fmt.Sprintf("%s/view/%s", e.getBaseURL(), pregnancy.ShareID)
+	
+	// Generate first photo URL if available
+	firstPhotoURL := ""
+	if photoCount > 0 {
+		firstPhotoURL = fmt.Sprintf("%s/images/%d/%s", e.getBaseURL(), pregnancy.ID, photos[0].Filename)
+	}
 
 	// Prepare template data
 	templateData := &TemplateData{
@@ -47,17 +55,22 @@ func (e *EmailService) SendUpdateNotification(ctx context.Context, update *model
 		UpdateWeek:      *update.WeekNumber,
 		UpdateDate:      update.UpdateDate.Format("January 2, 2006"),
 		UpdatePhotos:    make([]string, photoCount), // Just for count
-	}
-
-	// Generate email content
-	htmlContent, textContent, err := e.UpdateNotificationTemplate(templateData)
-	if err != nil {
-		return fmt.Errorf("failed to generate email template: %w", err)
+		FirstPhotoURL:   firstPhotoURL,
 	}
 
 	// Send emails to all village members
 	for _, member := range villageMembers {
-		templateData.RecipientName = member.Name
+		// Use only the first name for a more personal touch
+		firstName := strings.Fields(strings.TrimSpace(member.Name))[0]
+		templateData.RecipientName = firstName
+		
+		// Generate email content for this recipient
+		htmlContent, textContent, err := e.UpdateNotificationTemplate(templateData)
+		if err != nil {
+			log.Printf("Failed to generate email template for %s: %v", member.Email, err)
+			continue
+		}
+		
 		subject := e.GenerateSubject(models.EmailTypeUpdate, templateData)
 
 		emailReq := &EmailRequest{
@@ -305,6 +318,30 @@ func (e *EmailService) getUpdatePhotoCount(updateID int) int {
 		return 0
 	}
 	return count
+}
+
+func (e *EmailService) getUpdatePhotos(updateID int) []models.UpdatePhoto {
+	var photos []models.UpdatePhoto
+	query := `SELECT id, update_id, filename, original_filename, file_size, caption, sort_order, created_at 
+			  FROM update_photos WHERE update_id = ? ORDER BY sort_order`
+	rows, err := db.GetDB().Query(query, updateID)
+	if err != nil {
+		log.Printf("Error getting update photos: %v", err)
+		return photos
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var photo models.UpdatePhoto
+		err := rows.Scan(&photo.ID, &photo.UpdateID, &photo.Filename, &photo.OriginalFilename, 
+						&photo.FileSize, &photo.Caption, &photo.SortOrder, &photo.CreatedAt)
+		if err != nil {
+			log.Printf("Error scanning photo: %v", err)
+			continue
+		}
+		photos = append(photos, photo)
+	}
+	return photos
 }
 
 func (e *EmailService) getParentNames(pregnancy *models.Pregnancy) string {
