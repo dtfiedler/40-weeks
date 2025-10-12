@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"log"
@@ -10,6 +11,8 @@ import (
 
 	"simple-go/api/db"
 	"simple-go/api/middleware"
+	"simple-go/api/models"
+	"simple-go/api/services/email"
 )
 
 // AccessRequestRecord represents an access request from the database
@@ -185,6 +188,55 @@ func ManageAccessRequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Printf("Access request approved: %s (%s) added to pregnancy %d village", req.Name, req.Email, req.PregnancyID)
+
+		// Send welcome email to the newly approved member
+		emailService, err := email.NewEmailService()
+		if err != nil {
+			log.Printf("Error creating email service: %v", err)
+		} else {
+			// Get full pregnancy details for the email
+			var pregnancy models.Pregnancy
+			err = db.GetDB().QueryRow(`
+				SELECT id, user_id, share_id, baby_name, partner_name, partner_email, due_date, created_at, updated_at, is_active, cover_photo_filename
+				FROM pregnancies
+				WHERE id = ?
+			`, req.PregnancyID).Scan(
+				&pregnancy.ID,
+				&pregnancy.UserID,
+				&pregnancy.ShareID,
+				&pregnancy.BabyName,
+				&pregnancy.PartnerName,
+				&pregnancy.PartnerEmail,
+				&pregnancy.DueDate,
+				&pregnancy.CreatedAt,
+				&pregnancy.UpdatedAt,
+				&pregnancy.IsActive,
+				&pregnancy.CoverPhotoFilename,
+			)
+
+			if err != nil {
+				log.Printf("Error getting pregnancy details for welcome email: %v", err)
+			} else {
+				// Create a village member struct from the access request
+				villageMember := &models.VillageMember{
+					PregnancyID:  req.PregnancyID,
+					Name:         req.Name,
+					Email:        req.Email,
+					Relationship: req.Relationship,
+				}
+
+				// Send welcome email asynchronously
+				go func() {
+					ctx := context.Background()
+					err := emailService.SendWelcomeEmail(ctx, villageMember, &pregnancy)
+					if err != nil {
+						log.Printf("Error sending welcome email to %s: %v", req.Email, err)
+					} else {
+						log.Printf("Welcome email sent to newly approved member: %s", req.Email)
+					}
+				}()
+			}
+		}
 	} else {
 		log.Printf("Access request denied: %s (%s) for pregnancy %d", req.Name, req.Email, req.PregnancyID)
 	}

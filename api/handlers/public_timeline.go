@@ -61,6 +61,13 @@ func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Require email parameter for access verification
+	email := r.URL.Query().Get("email")
+	if email == "" {
+		http.Error(w, "Email parameter required", http.StatusBadRequest)
+		return
+	}
+
 	// Get pregnancy by share ID
 	pregnancy, err := GetPregnancyByShareID(shareID)
 	if err != nil {
@@ -69,6 +76,19 @@ func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Verify email has access to this timeline
+	hasAccess, err := verifyEmailAccess(pregnancy, email)
+	if err != nil {
+		log.Printf("Error verifying email access: %v", err)
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if !hasAccess {
+		http.Error(w, "Access denied", http.StatusForbidden)
 		return
 	}
 
@@ -335,6 +355,43 @@ func RequestTimelineAccessHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}
+
+// verifyEmailAccess checks if an email has access to view the timeline
+func verifyEmailAccess(pregnancy *models.Pregnancy, email string) (bool, error) {
+	// Check if email is the pregnancy owner
+	var ownerEmail string
+	err := db.GetDB().QueryRow(`
+		SELECT u.email 
+		FROM users u 
+		WHERE u.id = ?
+	`, pregnancy.UserID).Scan(&ownerEmail)
+	
+	if err != nil {
+		return false, err
+	}
+
+	// Check if user is pregnancy owner or partner
+	isOwner := strings.EqualFold(email, ownerEmail)
+	isPartner := pregnancy.PartnerEmail != nil && strings.EqualFold(email, *pregnancy.PartnerEmail)
+
+	if isOwner || isPartner {
+		return true, nil
+	}
+
+	// Check if email belongs to a village member
+	var count int
+	err = db.GetDB().QueryRow(`
+		SELECT COUNT(*) 
+		FROM village_members 
+		WHERE pregnancy_id = ? AND LOWER(email) = LOWER(?)
+	`, pregnancy.ID, email).Scan(&count)
+	
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
 // getPublicTimelineItems fetches only shared updates for public viewing
