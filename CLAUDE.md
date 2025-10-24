@@ -180,7 +180,7 @@ This application uses a **unified architecture** where one Go service handles bo
 - `AWS_REGION`: AWS region for SES (default: "us-east-1")
 - `AWS_ACCESS_KEY_ID`: AWS access key for SES
 - `AWS_SECRET_ACCESS_KEY`: AWS secret key for SES
-- `SENDER_EMAIL`: From email address (default: "noreply@40weeks.app")
+- `SENDER_EMAIL`: From email address (default: "noreply@example.com")
 - `SENDER_NAME`: From name (default: "40Weeks")
 
 ### Development Workflow

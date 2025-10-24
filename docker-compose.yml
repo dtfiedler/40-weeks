@@ -14,9 +14,9 @@ services:
       - AWS_REGION=${AWS_REGION:-us-east-1}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
-      - SENDER_EMAIL=${SENDER_EMAIL:-noreply@40weeks.xyz}
+      - SENDER_EMAIL=${SENDER_EMAIL:-noreply@example.com}
       - SENDER_NAME=${SENDER_NAME:-40Weeks}
-      - BASE_URL=${BASE_URL:-https://40weeks.xyz}
+      - BASE_URL=${BASE_URL:-http://localhost:8080}
     volumes:
       - ./data:/data
     restart: unless-stopped
